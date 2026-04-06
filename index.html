@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" type="image/png" href="favicon.png">
+<title>My Word Cards</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&family=Noto+Sans+SC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f3ef;--sur:#fff;--sur2:#f0ede8;--bdr:#e2ddd6;
+  --tx:#1a1612;--tx2:#6b6560;--tx3:#a09890;
+  --ac:#2d6a4f;--ac-l:#e8f4ee;--ac2:#c77b3a;--ac2-l:#fdf2e5;
+  --new:#5b7fa6;--new-b:#eaf0f8;--unf:#c77b3a;--unf-b:#fdf2e5;
+  --mis:#b85454;--mis-b:#fdeaea;
+  --fgt:#d946a8;--fgt-b:#fce8f6;
+  --fam:#2d6a4f;--fam-b:#e8f4ee;
+  /* 容易混淆：深靛蓝紫色 */
+  --unk:#4338ca;--unk-b:#ede9fe;
+  --r:16px;--rs:8px;
+  --hl-blue:#00cfff;--hl-purple:#ff4fcf;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;}
+.nav{background:var(--sur);border-bottom:1px solid var(--bdr);padding:0 16px;display:flex;align-items:center;gap:6px;height:52px;position:sticky;top:0;z-index:100;overflow-x:auto;}
+.nav-logo{font-family:'Lora',serif;font-size:16px;font-weight:700;color:var(--ac);margin-right:10px;white-space:nowrap;}
+.nb{padding:6px 14px;border-radius:20px;border:none;cursor:pointer;font-size:13px;font-family:'Noto Sans SC',sans-serif;background:transparent;color:var(--tx2);white-space:nowrap;flex-shrink:0;}
+.nb:hover{background:var(--sur2);}
+.nb.active{background:var(--ac);color:#fff;}
+.nav-bk{padding:6px 12px;border-radius:20px;border:1.5px solid var(--bdr);cursor:pointer;font-size:12px;font-family:'Noto Sans SC',sans-serif;background:transparent;color:var(--tx3);white-space:nowrap;flex-shrink:0;margin-left:auto;}
+.nav-bk:hover{background:var(--sur2);color:var(--tx);}
+.view{display:none;padding:20px 16px;max-width:900px;margin:0 auto;}
+.view.active{display:block;}
+.stats-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.schip{display:flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;font-size:13px;font-weight:500;cursor:pointer;border:2px solid transparent;}
+.schip.new{background:transparent;color:var(--new);border-color:var(--new);}
+.schip.unf{background:transparent;color:var(--unf);border-color:var(--unf);}
+.schip.mis{background:transparent;color:var(--mis);border-color:var(--mis);}
+.schip.fgt{background:transparent;color:var(--fgt);border-color:var(--fgt);}
+.schip.fam{background:transparent;color:var(--fam);border-color:var(--fam);}
+.schip.unk{background:transparent;color:var(--unk);border-color:var(--unk);}
+.word-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;}
+.wcs{background:var(--sur);border-radius:var(--r);padding:14px 16px;border:1px solid var(--bdr);cursor:pointer;transition:all .2s;display:flex;flex-direction:column;gap:4px;}
+.wcs:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);transform:translateY(-2px);}
+.wcs-w{font-family:'Lora',serif;font-size:22px;font-weight:700;}
+.wcs-i{font-family:'Noto Serif',serif;font-size:12px;color:var(--tx3);}
+.wcs-p{font-size:11px;font-weight:500;color:var(--ac2);background:var(--ac2-l);padding:2px 7px;border-radius:10px;width:fit-content;}
+.wcs-c{font-size:13px;color:var(--tx2);}
+.wcs-t{margin-top:4px;font-size:11px;font-weight:600;padding:2px 7px;border-radius:10px;width:fit-content;}
+.t-new{background:transparent;color:var(--new);}
+.t-unf{background:transparent;color:var(--unf);}
+.t-mis{background:transparent;color:var(--mis);}
+.t-fgt{background:transparent;color:var(--fgt);}
+.t-fam{background:transparent;color:var(--fam);}
+.t-unk{background:var(--unk-b);color:var(--unk);}
+
+/* 卡片区控制行 — 新顺序：new unf unk mis fgt fam */
+.cls-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;max-width:680px;margin:0 auto 10px;}
+.cb{padding:7px 14px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Noto Sans SC',sans-serif;}
+.cb.new{background:transparent;color:var(--new);border:1.5px solid var(--new);}
+.cb.unf{background:transparent;color:var(--unf);border:1.5px solid var(--unf);}
+.cb.mis{background:transparent;color:var(--mis);border:1.5px solid var(--mis);}
+.cb.fgt{background:transparent;color:var(--fgt);border:1.5px solid var(--fgt);}
+.cb.fam{background:transparent;color:var(--fam);border:1.5px solid var(--fam);}
+.cb.unk{background:var(--unk-b);color:var(--unk);border:1.5px solid var(--unk);}
+
+.fc-ctrl-row{display:flex;gap:8px;align-items:center;justify-content:center;max-width:680px;margin:0 auto 7px;flex-wrap:wrap;}
+.ab{background:var(--sur);border:1px solid var(--bdr);border-radius:10px;padding:7px 18px;font-size:14px;cursor:pointer;color:var(--tx2);}
+.ab:hover{background:var(--sur2);}
+.fb{background:#2d6a4f;color:#fff;border:none;border-radius:10px;padding:9px 24px;font-size:14px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;font-weight:600;}
+.fb:hover{opacity:.88;}
+.fp{font-size:13px;color:var(--tx3);font-family:'DM Mono',monospace;white-space:nowrap;}
+
+.fc-sinp-wrap{position:relative;display:flex;align-items:center;}
+.fc-sinp-wrap input{padding:7px 30px 7px 12px;border:1.5px solid var(--bdr);border-radius:10px;font-size:13px;font-family:'Noto Sans SC',sans-serif;background:var(--sur);color:var(--tx);outline:none;width:160px;}
+.fc-sinp-wrap input:focus{border-color:var(--ac);width:200px;transition:width .2s;}
+.fc-sinp-wrap .clr-btn{position:absolute;right:6px;background:none;border:none;cursor:pointer;font-size:13px;color:var(--tx3);padding:0;}
+.fc-sdrop{position:absolute;top:calc(100% + 4px);left:0;min-width:240px;background:var(--sur);border:1px solid var(--bdr);border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.12);z-index:200;max-height:220px;overflow-y:auto;display:none;}
+.fc-sdrop.show{display:block;}
+.fc-drop-item{padding:9px 14px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--bdr);}
+.fc-drop-item:last-child{border-bottom:none;}
+.fc-drop-item:hover{background:var(--sur2);}
+
+.tbc{width:18px;height:18px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.tbc:hover{border-color:#fff;transform:scale(1.2);}
+.tbh{width:22px;height:14px;border-radius:3px;cursor:pointer;border:2px solid transparent;flex-shrink:0;}
+.tbh:hover{border-color:#fff;}
+.tbsep{width:1px;height:16px;background:rgba(255,255,255,.2);flex-shrink:0;}
+.tbclr{background:none;border:1px solid rgba(255,255,255,.35);border-radius:6px;color:#fff;font-size:10px;padding:2px 7px;cursor:pointer;white-space:nowrap;}
+.tbsz{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);border-radius:5px;color:#fff;font-size:11px;padding:2px 5px;cursor:pointer;font-family:monospace;}
+.tbsz:hover{background:rgba(255,255,255,.25);}
+
+.sbadge{font-size:12px;font-weight:600;padding:3px 10px;border-radius:12px;display:inline-block;margin-bottom:3px;}
+.sbadge.new{background:transparent;color:var(--new);}
+.sbadge.unf{background:transparent;color:var(--unf);}
+.sbadge.mis{background:transparent;color:var(--mis);}
+.sbadge.fgt{background:transparent;color:var(--fgt);}
+.sbadge.fam{background:transparent;color:var(--fam);}
+.sbadge.unk{background:var(--unk-b);color:var(--unk);}
+
+.card-scene{perspective:1200px;width:100%;max-width:680px;margin:0 auto;height:390px;user-select:none;}
+.card-inner{width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);position:relative;}
+.card-inner.flipped{transform:rotateY(180deg);}
+.cf,.cb2{position:absolute;inset:0;background:var(--sur);border-radius:var(--r);border:1px solid var(--bdr);box-shadow:0 8px 32px rgba(0,0,0,.12);backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;padding:10px 20px 10px;overflow-y:auto;}
+.cf{justify-content:flex-start;}
+.cb2{transform:rotateY(180deg);align-items:flex-start;justify-content:flex-start;}
+.cf-top{display:flex;flex-direction:column;align-items:center;flex:1;width:100%;overflow-y:auto;padding-bottom:4px;}
+.cf-bottom{width:100%;flex-shrink:0;border-top:1px solid var(--bdr);padding-top:6px;margin-top:3px;}
+.spk-row{display:flex;gap:8px;justify-content:center;align-items:center;flex-wrap:wrap;}
+.spk{background:var(--ac-l);color:var(--ac);border:none;border-radius:24px;padding:6px 16px;font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;font-weight:500;}
+.spk:hover{background:var(--ac);color:#fff;}
+
+.rnote,.rnote-b{width:100%;min-height:36px;border:1px dashed var(--bdr);border-radius:8px;padding:6px 12px;font-family:'Microsoft YaHei','微软雅黑','Noto Sans SC',sans-serif;background:var(--sur2);color:var(--tx);line-height:1.6;outline:none;word-break:break-word;font-size:14px;}
+.rnote-b{min-height:40px;font-size:13px;}
+.rnote:empty::before,.rnote-b:empty::before{content:attr(data-ph);color:var(--tx3);pointer-events:none;font-style:italic;}
+
+#ntb{position:fixed;z-index:9999;background:#1a1612;border-radius:12px;padding:7px 10px;display:none;gap:5px;align-items:center;box-shadow:0 4px 20px rgba(0,0,0,.4);flex-wrap:wrap;max-width:360px;}
+.tbl{font-size:10px;color:#888;white-space:nowrap;}
+
+.cw{font-family:'Lora',serif;font-size:42px;font-weight:700;text-align:center;line-height:1.05;user-select:text;cursor:text;}
+.ci{font-family:'Noto Serif',serif;font-size:20px;color:var(--tx3);margin-top:2px;text-align:center;outline:none;word-break:break-word;cursor:text;}
+.cfe{margin-top:4px;text-align:center;width:100%;}
+.cfe-en{font-family:'Lora',serif;font-size:21px;font-style:italic;color:var(--tx2);line-height:1.5;outline:none;word-break:break-word;display:block;text-align:center;width:100%;cursor:text;user-select:text;}
+
+.cf-status-row{width:100%;display:flex;justify-content:flex-end;margin-bottom:2px;}
+
+.vg{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:6px;max-height:60vh;overflow-y:auto;border:1px solid var(--bdr);border-radius:var(--rs);padding:10px;background:var(--sur);}
+.vi{padding:8px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:all .15s;display:flex;flex-direction:column;gap:2px;}
+.vi:hover{background:var(--sur2);}
+.vi.in{background:var(--new-b);color:var(--new);border-color:var(--new);}
+
+.st{font-family:'Lora',serif;font-size:20px;font-weight:700;margin-bottom:18px;}
+.fg{margin-bottom:16px;}
+.fl{display:block;font-size:13px;font-weight:600;color:var(--tx2);margin-bottom:5px;}
+.fi,.fs,.fta{width:100%;padding:9px 13px;border:1px solid var(--bdr);border-radius:var(--rs);font-size:15px;background:var(--sur);font-family:'Noto Sans SC',sans-serif;color:var(--tx);}
+.fi:focus,.fs:focus,.fta:focus{outline:none;border-color:var(--ac);}
+.fta{resize:vertical;min-height:65px;}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.bp{background:var(--ac);color:#fff;border:none;border-radius:var(--rs);padding:11px 26px;font-size:15px;font-weight:600;cursor:pointer;font-family:'Noto Sans SC',sans-serif;}
+.bs{background:var(--sur2);color:var(--tx2);border:1px solid var(--bdr);border-radius:var(--rs);padding:9px 18px;cursor:pointer;font-size:14px;font-family:'Noto Sans SC',sans-serif;font-weight:600;}
+.bd{background:var(--mis-b);color:var(--mis);border:none;border-radius:var(--rs);padding:9px 18px;cursor:pointer;font-size:14px;font-family:'Noto Sans SC',sans-serif;font-weight:600;}
+.bd:hover{background:var(--mis);color:#fff;}
+.bg{background:var(--new-b);color:var(--new);border:none;border-radius:var(--rs);padding:9px 18px;cursor:pointer;font-size:14px;font-family:'Noto Sans SC',sans-serif;font-weight:600;}
+.bg:hover{background:var(--new);color:#fff;}
+.fcf{padding:6px 12px;border-radius:8px;border:1px solid var(--bdr);background:var(--sur);font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;color:var(--tx2);}
+
+.mo,.vmo,.bko{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;align-items:center;justify-content:center;}
+.mo.show,.vmo.show,.bko.show{display:flex;}
+.vmo{z-index:600;}.bko{z-index:700;}
+.md,.vmd,.bkm{background:var(--sur);border-radius:var(--r);padding:24px;max-width:560px;width:92%;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.12);}
+.vmd{max-width:480px;}.bkm{max-width:440px;}
+.mt{font-family:'Lora',serif;font-size:19px;font-weight:700;margin-bottom:18px;}
+.ma{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);background:var(--tx);color:#fff;padding:10px 20px;border-radius:24px;font-size:14px;z-index:9999;transition:transform .3s;pointer-events:none;white-space:nowrap;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.empty-s{text-align:center;padding:50px 20px;color:var(--tx3);}
+.no-flip{cursor:auto;}
+</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<nav class="nav">
+  <span class="nav-logo">📖 WordCards</span>
+  <button class="nb active" onclick="showView('list',this)">单词列表</button>
+  <button class="nb" onclick="showView('fc',this)">卡片学习</button>
+  <button class="nb" onclick="showView('vocab',this)">导入词库</button>
+  <button class="nb" onclick="showView('add',this)">添加单词</button>
+  <button class="nav-bk" onclick="openBk()">💾 备份/恢复</button>
+  <span id="sync-status" style="font-size:11px;color:var(--tx3);white-space:nowrap;flex-shrink:0;">☁️</span>
+</nav>
+
+<!-- 单词列表 -->
+<div class="view active" id="view-list">
+  <div class="stats-bar" id="stats-bar"></div>
+  <div class="word-grid" id="word-grid"></div>
+  <div class="empty-s" id="empty-list" style="display:none"><div style="font-size:44px">📝</div><div>还没有单词，去添加或从词库导入！</div></div>
+</div>
+
+<!-- 卡片学习 -->
+<div class="view" id="view-fc">
+  <!-- 新顺序：new → unf → unk → mis → fgt → fam -->
+  <div class="cls-row">
+    <button class="cb new" onclick="classifyOnly('new')">🔵 新单词</button>
+    <button class="cb unf" onclick="classifyOnly('unf')">🟠 发音不对</button>
+    <button class="cb unk" onclick="classifyOnly('unk')">🟤 容易混淆</button>
+    <button class="cb mis" onclick="classifyOnly('mis')">🔴 拼错字母</button>
+    <button class="cb fgt" onclick="classifyOnly('fgt')">🟣 忘意思了</button>
+    <button class="cb fam" onclick="classifyOnly('fam')">🟢 熟悉</button>
+  </div>
+  <div class="fc-ctrl-row">
+    <button class="ab" onclick="prevCard()">← 上一个</button>
+    <button class="ab" onclick="nextCard()">下一个 →</button>
+    <button class="fb" onclick="flipCard()">↩ 翻转</button>
+    <span class="fp" id="fcp">0 / 0</span>
+    <div class="fc-sinp-wrap" style="position:relative;">
+      <input type="text" id="fc-sinp" placeholder="🔍 搜索跳转…" oninput="fcSearchInput()" onkeydown="fcSearchKey(event)" autocomplete="off">
+      <button class="clr-btn" onclick="fcSearchClear()">✕</button>
+      <div class="fc-sdrop" id="fc-sdrop"></div>
+    </div>
+  </div>
+
+  <div class="card-scene" id="card-scene">
+    <div class="card-inner" id="ci">
+      <!-- 正面 -->
+      <div class="cf">
+        <div class="cf-top">
+          <div class="cf-status-row">
+            <div id="cf-status" class="sbadge new">🔵 新单词</div>
+          </div>
+          <div class="cw no-flip" id="cfw" contenteditable="true" onmouseup="onNUp(event)" onfocus="lne=this" oninput="saveField('wordColorHtml','cfw')" spellcheck="false">—</div>
+          <div class="ci no-flip" id="cfi" contenteditable="true"
+            onfocus="lne=this"
+            onmouseup="onNUp(event)"
+            oninput="lne=this;saveField('ipaHtml','cfi')"></div>
+          <div class="cfe no-flip" id="cfe"></div>
+          <div id="cfn" class="rnote no-flip" contenteditable="true" data-ph="✏️ 标注… 选中文字后可单独改颜色"
+            onfocus="lne=this"
+            onmouseup="onNUp(event)"
+            oninput="lne=this;saveN()"></div>
+        </div>
+        <div class="cf-bottom no-flip">
+          <div class="spk-row">
+            <button class="spk" id="spk-read">🔊 朗读</button>
+            <button class="spk" id="spk-word">🎵 听发音</button>
+          </div>
+        </div>
+      </div>
+      <!-- 背面 -->
+      <div class="cb2 no-flip" onclick="event.stopPropagation()">
+        <div id="cbc" style="width:100%;display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;padding-bottom:8px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 词库 -->
+<div class="view" id="view-vocab">
+  <div class="st">📚 常用词库</div>
+  <p style="font-size:14px;color:var(--tx2);margin-bottom:14px;">点击单词 → 自动查询音标/例句/中文翻译 → 添加。蓝色=已在列表。</p>
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center;">
+    <select class="fcf" id="vc" onchange="renderV()">
+      <option value="basic">基础词汇 A1-A2 (1500+词)</option>
+      <option value="inter">中级词汇 B1-B2 (1500+词)</option>
+      <option value="adv">高级词汇 C1-C2 (1500+词)</option>
+      <option value="biz">商务英语 (1500+词)</option>
+      <option value="acad">学术词汇 (1200+词)</option>
+      <option value="news">新闻用语 (1200+词)</option>
+      <option value="tech">AI/电脑用语 (800+词)</option>
+    </select>
+    <input class="fcf" type="text" id="vs" placeholder="搜索…" oninput="renderV()" style="width:130px;">
+    <span id="vcnt" style="font-size:13px;color:var(--tx3);"></span>
+  </div>
+  <div class="vg" id="vg"></div>
+</div>
+
+<!-- 添加单词 -->
+<div class="view" id="view-add">
+  <div class="st">➕ 添加新单词</div>
+  <div style="max-width:600px;">
+    <div class="fr">
+      <div class="fg">
+        <label class="fl">英文单词 *</label>
+        <input class="fi" id="fw" type="text" placeholder="e.g. serendipity" oninput="checkDup(this.value)">
+        <div id="dup-hint" style="display:none;margin-top:4px;padding:6px 10px;background:#fff3cd;border:1px solid #ffc107;border-radius:6px;font-size:13px;color:#856404;">
+          ⚠️ 这个单词已在列表中！
+          <button onclick="goToDupCard()" style="margin-left:8px;background:#856404;color:#fff;border:none;border-radius:4px;padding:2px 8px;font-size:12px;cursor:pointer;">去看这张卡片</button>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">IPA音标</label><input class="fi" id="fipa" type="text"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">词性</label>
+        <select class="fs" id="fpos"><option value="n.">n. 名词</option><option value="v.">v. 动词</option><option value="adj.">adj. 形容词</option><option value="adv.">adv. 副词</option><option value="prep.">prep. 介词</option><option value="phrase">phrase 短语</option><option value="?">? 不详</option></select>
+      </div>
+      <div class="fg"><label class="fl">分类</label>
+        <!-- 新顺序：new unf unk mis fgt fam -->
+        <select class="fs" id="fst">
+          <option value="new">🔵 新单词</option>
+          <option value="unf">🟠 发音不对</option>
+          <option value="unk">🟤 容易混淆</option>
+          <option value="mis">🔴 拼错字母</option>
+          <option value="fgt">🟣 忘意思了</option>
+          <option value="fam">🟢 熟悉</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">中文意思 *</label><input class="fi" id="fcn" type="text"></div>
+    <div class="fg"><label class="fl">我的标注</label><input class="fi" id="fnt" type="text" placeholder="记忆口诀…"></div>
+    <div class="fg"><label class="fl">例句（英文）</label><textarea class="fta" id="fee"></textarea></div>
+    <div class="fg"><label class="fl">例句（中文）</label><textarea class="fta" id="fce"></textarea></div>
+    <button class="bp" onclick="addWord()">保存单词</button>
+  </div>
+</div>
+
+<!-- 编辑弹窗 -->
+<div class="mo" id="edit-mo">
+  <div class="md">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <span style="font-family:'Lora',serif;font-size:17px;font-weight:700;">✏️ 编辑</span>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="bd" onclick="delWord()">删除</button>
+        <button class="bs" onclick="closeMo()">取消</button>
+        <button class="bg" onclick="goToCard()">🃏 去看卡片</button>
+        <button class="bp" onclick="saveEdit()">保存</button>
+      </div>
+    </div>
+    <input type="hidden" id="eid">
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:8px;">
+      <div class="fg"><label class="fl">英文单词</label><input class="fi" id="ew"></div>
+      <div class="fg"><label class="fl">IPA</label><input class="fi" id="eipa"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div class="fg"><label class="fl">词性</label><select class="fs" id="epos"><option value="n.">n. 名词</option><option value="v.">v. 动词</option><option value="adj.">adj. 形容词</option><option value="adv.">adv. 副词</option><option value="prep.">prep. 介词</option><option value="phrase">phrase 短语</option><option value="?">? 不详</option></select></div>
+      <div class="fg"><label class="fl">分类</label>
+        <select class="fs" id="est">
+          <option value="new">🔵 新单词</option>
+          <option value="unf">🟠 发音不对</option>
+          <option value="unk">🟤 容易混淆</option>
+          <option value="mis">🔴 拼错字母</option>
+          <option value="fgt">🟣 忘意思了</option>
+          <option value="fam">🟢 熟悉</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg"><label class="fl">中文意思</label><input class="fi" id="ecn"></div>
+    <div class="fg"><label class="fl">我的标注</label><textarea class="fta" id="ent" style="min-height:48px;"></textarea></div>
+    <div class="fg"><label class="fl">例句（英文）</label><textarea class="fta" id="eee" style="min-height:52px;"></textarea></div>
+    <div class="fg"><label class="fl">例句（中文）</label><textarea class="fta" id="ece" style="min-height:48px;"></textarea></div>
+  </div>
+</div>
+
+<!-- 词库弹窗 -->
+<div class="vmo" id="vm">
+  <div class="vmd">
+    <div class="mt" id="vmt">添加单词</div>
+    <div id="vml" style="text-align:center;padding:20px;color:var(--tx3);">🔍 正在查询…</div>
+    <div id="vmf" style="display:none;">
+      <div class="fr"><div class="fg"><label class="fl">单词</label><input class="fi" id="vmw" readonly></div><div class="fg"><label class="fl">IPA</label><input class="fi" id="vmipa"></div></div>
+      <div class="fr"><div class="fg"><label class="fl">词性</label><input class="fi" id="vmpos"></div>
+        <div class="fg"><label class="fl">分类</label>
+          <select class="fs" id="vmst">
+            <option value="new">🔵 新单词</option>
+            <option value="unf">🟠 发音不对</option>
+            <option value="unk">🟤 容易混淆</option>
+            <option value="mis">🔴 拼错字母</option>
+            <option value="fgt">🟣 忘意思了</option>
+            <option value="fam">🟢 熟悉</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">中文意思</label><input class="fi" id="vmcn"></div>
+      <div class="fg"><label class="fl">例句（英文）</label><textarea class="fta" id="vmee"></textarea></div>
+      <div class="fg"><label class="fl">例句（中文）</label><textarea class="fta" id="vmce"></textarea></div>
+      <div class="fg"><label class="fl">我的标注</label><input class="fi" id="vmnt" placeholder="记忆口诀…"></div>
+    </div>
+    <div class="ma"><button class="bs" onclick="closeVM()">取消</button><button class="bp" id="vmsb" onclick="saveVM()" style="display:none;">添加到列表</button></div>
+  </div>
+</div>
+
+<!-- 备份弹窗 -->
+<div class="bko" id="bko">
+  <div class="bkm">
+    <div style="font-family:'Lora',serif;font-size:18px;font-weight:700;margin-bottom:6px;">💾 备份 & 恢复</div>
+    <div style="font-size:13px;color:var(--tx3);margin-bottom:18px;line-height:1.6;">数据存在浏览器本地，清缓存会消失。请定期导出备份。</div>
+    <div style="display:inline-flex;align-items:center;gap:6px;background:var(--ac-l);color:var(--ac);padding:5px 12px;border-radius:20px;font-size:13px;font-weight:600;margin-bottom:16px;">📚 <span id="bkc">0</span> 个单词</div>
+    <div style="margin-bottom:10px;">
+      <button class="bp" onclick="forceSyncToCloud()" style="width:100%;margin-bottom:6px;">☁️ 立即同步到云端</button>
+      <div style="font-size:12px;color:var(--tx3);">把电脑上的数据强制上传到云端，手机即可同步。</div>
+    </div>
+    <div style="height:1px;background:var(--bdr);margin:12px 0;"></div>
+    <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--tx2);">📤 导出备份</div>
+    <button class="bp" onclick="exportBk()" style="margin-bottom:6px;">⬇️ 下载 .json 文件</button>
+    <div style="font-size:12px;color:var(--tx3);margin-bottom:14px;">存到手机或电脑，随时可恢复。</div>
+    <div style="height:1px;background:var(--bdr);margin:16px 0;"></div>
+    <div style="margin-bottom:8px;font-size:12px;font-weight:600;color:var(--tx2);">📥 导入恢复</div>
+    <label class="bs" style="cursor:pointer;display:inline-block;margin-bottom:6px;" for="bkf">⬆️ 选择备份文件</label>
+    <input type="file" id="bkf" accept=".json" style="display:none;" onchange="importBk(this)">
+    <div style="font-size:12px;color:var(--tx3);" id="bkst">选择之前的 .json 文件恢复（合并，不删除已有）。</div>
+    <div style="height:1px;background:var(--bdr);margin:16px 0;"></div>
+    <div style="text-align:right;"><button class="bs" onclick="closeBk()">关闭</button></div>
+  </div>
+</div>
+
+<!-- 注释工具条 -->
+<div id="ntb">
+  <span class="tbl">字色</span>
+  <div class="tbc" style="background:#1a1612;" onmousedown="apC(event,'#1a1612',null)"></div>
+  <div class="tbc" style="background:#e53935;" onmousedown="apC(event,'#e53935',null)"></div>
+  <div class="tbc" style="background:#b85454;" onmousedown="apC(event,'#b85454',null)"></div>
+  <div class="tbc" style="background:#2d6a4f;" onmousedown="apC(event,'#2d6a4f',null)"></div>
+  <div class="tbc" style="background:#00cfff;" onmousedown="apC(event,'#00cfff',null)"></div>
+  <div class="tbc" style="background:#c77b3a;" onmousedown="apC(event,'#c77b3a',null)"></div>
+  <div class="tbc" style="background:#d946a8;" onmousedown="apC(event,'#d946a8',null)"></div>
+  <div class="tbsep"></div>
+  <span class="tbl">划色</span>
+  <div class="tbh" style="background:#ffe066;" onmousedown="apC(event,null,'#ffe066')"></div>
+  <div class="tbh" style="background:#ff8a80;" onmousedown="apC(event,null,'#ff8a80')"></div>
+  <div class="tbh" style="background:#b5ead7;" onmousedown="apC(event,null,'#b5ead7')"></div>
+  <div class="tbh" style="background:#ffc0eb;" onmousedown="apC(event,null,'#ffc0eb')"></div>
+  <div class="tbh" style="background:#b3f0ff;" onmousedown="apC(event,null,'#b3f0ff')"></div>
+  <div class="tbsep"></div>
+  <span class="tbl">字号</span>
+  <button class="tbsz" onmousedown="apSz(event,11)">小</button>
+  <button class="tbsz" onmousedown="apSz(event,14)">中</button>
+  <button class="tbsz" onmousedown="apSz(event,18)">大</button>
+  <button class="tbsz" onmousedown="apSz(event,22)">特大</button>
+  <div class="tbsep"></div>
+  <button class="tbclr" onmousedown="apC(event,'clr','clr')">清除</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ Firebase ══
+const firebaseConfig={apiKey:"AIzaSyALc1wKd0xMZU3v0jgNF_6XZy7UscMys7o",authDomain:"wordcard-3bd16.firebaseapp.com",projectId:"wordcard-3bd16",storageBucket:"wordcard-3bd16.firebasestorage.app",messagingSenderId:"692507567886",appId:"1:692507567886:web:f7b52e0ca07c9b95ebd95f"};
+let db=null,docRef=null;
+const USER_ID='main';
+function initFirebase(){
+  try{
+    if(typeof firebase==='undefined')return;
+    if(!firebase.apps.length)firebase.initializeApp(firebaseConfig);
+    db=firebase.firestore();docRef=db.collection('users').doc(USER_ID);
+    setTimeout(()=>loadFromCloud(),800);
+  }catch(e){console.warn('Firebase初始化失败:',e);}
+}
+document.addEventListener('firebaseReady',initFirebase);
+if(typeof firebase!=='undefined')initFirebase();
+
+async function forceSyncToCloud(){
+  if(!db||!docRef){toast('⚠️ Firebase未连接，请刷新重试');return;}
+  toast('⏳ 同步中，请稍候…');
+  try{
+    const ts=Date.now();
+    await Promise.race([docRef.set({words:JSON.stringify(words),updatedAt:ts}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),15000))]);
+    localStorage.setItem('wc_updated',ts.toString());
+    toast('☁️ 同步成功！手机刷新即可看到全部单词');
+  }catch(e){toast(e.message==='timeout'?'⚠️ 超时，请检查网络后重试':'❌ 失败：'+e.message);}
+}
+async function syncToCloud(){
+  if(!db||!docRef)return;
+  try{const ts=Date.now();await docRef.set({words:JSON.stringify(words),updatedAt:ts});localStorage.setItem('wc_updated',ts.toString());}catch(e){}
+}
+async function loadFromCloud(){
+  if(!db||!docRef)return false;
+  try{
+    const snap=await docRef.get();
+    if(snap.exists){
+      const data=snap.data();const cloudWords=JSON.parse(data.words||'[]');const cloudTime=data.updatedAt||0;
+      if(cloudWords.length>words.length){words=cloudWords;localStorage.setItem('wc_words',JSON.stringify(words));localStorage.setItem('wc_updated',cloudTime.toString());renderList();showSyncBadge('☁️ 已从云端同步 '+cloudWords.length+' 个单词');return true;}
+    }
+  }catch(e){}
+  return false;
+}
+function showSyncBadge(msg){const t=document.getElementById('toast');if(t){t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);}}
+
+// ══ 核心数据 ══
+// 顺序：new → unf → unk → mis → fgt → fam
+const SL={new:'新单词',unf:'发音不对',unk:'容易混淆',mis:'拼错字母',fgt:'忘意思了',fam:'熟悉'};
+const SE={new:'🔵',unf:'🟠',unk:'🟤',mis:'🔴',fgt:'🟣',fam:'🟢'};
+
+let words=JSON.parse(localStorage.getItem('wc_words')||'[]');
+let deck=[],idx=0,flipped=false,savedSel=null,lne=null,jumpId=null;
+
+function save(){localStorage.setItem('wc_words',JSON.stringify(words));localStorage.setItem('wc_updated',Date.now().toString());syncToCloud();}
+
+// ══ 词库数据 ══
+const VB={
+basic:['ability','able','about','above','absence','absent','accent','accept','accident','account','ache','achieve','across','action','activity','actor','actually','address','adult','advice','afraid','after','again','against','age','agree','ahead','air','airport','alarm','alert','alike','all','allow','almost','alone','aloud','already','also','although','always','among','amount','amuse','angry','animal','ankle','annoy','another','answer','anxious','apart','apartment','apologize','appear','apply','area','around','arrange','arrive','arrow','art','artist','as','ask','asleep','attach','attempt','attention','attic','aunt','available','awake','aware','away','awful','awkward','axe','baby','babysit','back','bad','badminton','baggage','bake','baker','balance','balcony','ball','ballet','balloon','banana','bandage','bank','bargain','barn','basement','basket','bath','bay','beach','beard','beat','beautiful','beckon','become','bed','bedroom','before','beg','begin','behind','believe','below','bend','benefit','beside','betray','better','between','bicycle','bike','bill','bird','birthday','bite','blanket','blend','bless','blind','bliss','bloom','blossom','blow','blue','board','boast','boat','body','bold','bolt','bond','bone','book','bore','boring','born','borrow','boss','both','bottle','bottom','bounce','bowl','bowling','box','boy','brag','branch','brave','bread','break','breakfast','brew','brick','bridge','bring','brother','brow','brown','bruise','brush','bubble','bucket','budget','build','building','bulb','bull','bundle','burn','burp','bury','bus','busy','button','buy','cafe','cage','cake','call','calm','camera','camp','can','canal','candle','canvas','cap','caption','car','card','care','careful','carry','cart','cartoon','case','cash','cast','castle','cat','catch','cause','cave','ceiling','celebrate','cell','cent','certain','chair','chalk','change','chapter','charge','charm','cheap','check','cheek','cheese','chef','cherry','chest','chicken','child','chin','chip','chocolate','choose','chop','church','cinema','city','clap','class','clay','clean','clear','clerk','click','climb','clip','clock','close','closet','cloth','clothes','cloud','clown','club','coach','coal','coat','code','coffee','coin','cold','collect','college','color','comb','come','comfortable','company','compare','complete','computer','concern','concert','conflict','connect','consider','continue','control','cook','cool','copy','corn','corner','correct','cost','couch','could','count','country','court','cousin','cover','cow','craft','crash','crazy','cream','create','crop','cross','crowd','cruel','cry','cup','cure','curtain','cushion','custom','customer','cut','dad','daily','damp','dance','danger','daring','dark','dash','date','dawn','deaf','deal','debate','decide','deck','deep','deer','defeat','delay','delight','deliver','dense','dentist','depend','describe','desert','desk','dessert','detective','devour','dial','diary','diet','different','difficult','dig','dim','dine','dinner','dinosaur','dip','direction','dirt','dirty','discuss','dish','distance','dive','dizzy','dock','dog','donate','doodle','door','dot','dough','down','dread','dream','dress','drink','drive','drool','drop','drum','dry','during','dusk','dust','each','early','earn','east','easy','eat','edge','effect','egg','eight','either','elastic','elder','else','email','embarrass','embrace','emergency','empty','enchant','end','energize','enjoy','enormous','enough','enter','envelope','envious','escape','even','event','ever','every','exact','exam','example','except','exercise','exhaust','exit','expel','experience','explain','explode','express','fable','face','factory','fail','faint','fair','fake','fall','fame','family','fan','fancy','fare','farm','fast','favor','fawn','fear','feature','feed','feel','feet','fence','festival','fetch','fever','few','field','fierce','fight','fill','find','fine','finish','fire','firm','fish','five','fix','flag','flat','flaw','flea','flesh','flight','flip','float','flock','flood','floor','flop','flour','flow','flower','fly','foam','fold','follow','fond','food','fool','foot','for','forbid','force','forest','forget','fork','form','formal','forward','fountain','four','fox','fragment','frame','frank','freckle','free','freeze','friend','frighten','frog','from','frost','frozen','fruit','fry','fuel','full','fund','funny','furious','future','gain','gallop','game','garden','gate','gaze','genuine','gesture','get','ghost','gift','giggle','girl','give','glad','glass','glow','glue','gnaw','go','goal','gold','good','gossip','grab','grace','graceful','grade','grain','grape','grass','grateful','grave','gray','great','green','greet','grid','grief','grin','grip','groan','groom','grow','grudge','grumble','guard','guess','guest','guide','guitar','gym','habit','hair','half','hall','ham','hand','hang','happen','happy','hard','harm','has','hat','have','hay','heal','health','hear','heart','heat','heavy','heel','help','hero','hide','high','hill','hint','hold','hole','home','honest','honor','hook','hope','horn','horrible','hospital','hot','hotel','hour','house','how','however','hug','humorous','hungry','hunt','hurry','hurt','hut','ice','idea','if','ignore','important','in','inch','include','information','innocent','inside','instead','insult','interest','intimate','into','intruder','invite','iron','island','itch','its','jacket','jail','jar','jaw','jealous','jest','job','join','journey','joy','juice','jump','just','keep','key','kick','kind','king','kit','kitchen','knee','kneel','knock','know','label','lake','lamp','land','language','large','later','laugh','lay','layer','leaf','lean','learn','leave','lecture','left','legend','lend','less','let','lid','life','lift','light','like','likely','lime','line','link','list','listen','little','live','lively','load','local','lock','long','look','loom','lose','love','low','loyal','lunch','mad','made','magical','mail','main','make','man','manage','many','map','march','market','massive','matter','may','maybe','maze','me','meal','mean','meat','meet','meeting','menu','mercy','message','mice','might','mild','mill','mind','mine','mint','mirror','miss','mist','mistake','mix','moan','mock','modern','modest','money','month','mop','more','morning','mortal','moss','most','mountain','move','movie','much','mud','mug','museum','music','must','my','mysterious','nail','name','naughty','near','neat','neck','need','neighbor','net','never','new','newspaper','next','nice','night','nine','no','noble','nod','noise','none','not','note','nothing','notice','now','number','oak','obey','ocean','of','off','offer','office','often','on','once','one','only','open','or','orange','order','our','out','outside','over','own','pace','pack','pad','paint','pale','pan','panic','paradise','park','part','passion','past','path','patient','pattern','paw','pay','peculiar','peel','pen','people','perfect','phone','photo','pick','picture','piece','pig','pile','pine','pipe','pitch','pity','pizza','place','plain','plan','plant','plate','play','please','pledge','plug','plum','plunge','poke','pole','police','polite','pond','pool','pose','possible','post','pot','pound','pour','practice','precious','prepare','press','price','pride','print','prize','problem','promise','proof','proper','proud','pull','pump','push','put','quickly','quiet','rack','rag','rage','rain','raise','ram','rank','rapid','rare','raw','ray','reach','ready','real','really','recent','reckless','reel','regret','reject','relax','remember','rent','repair','repeat','rest','restaurant','return','reward','rice','rich','rid','ridicule','right','rigid','rim','rip','rise','risk','river','road','roar','rob','rock','rod','roll','room','root','rope','rot','round','row','royal','rub','rude','rule','rumor','run','rush','sacred','sad','safe','sail','sailor','salt','same','sand','sandwich','sap','save','saw','say','scatter','scene','school','scream','search','season','seed','selfish','sell','send','sensitive','service','set','sew','shade','shadow','shake','share','sharp','she','shell','shin','ship','shiver','shock','shop','shopping','short','show','shower','shy','side','sigh','sign','silk','simple','since','sincere','sink','sit','six','size','skillful','skin','skip','skull','sky','slam','slap','sleek','sleep','slide','slim','slip','slow','small','smile','smoke','snap','sneaky','snow','so','sofa','soil','sole','some','song','soon','sorrow','sorry','sort','soul','sound','space','span','speak','spell','spend','spill','spin','spit','split','sport','spot','spur','stab','stack','staff','stain','stairs','stale','stamp','stand','star','start','station','stay','steel','step','stern','stick','stiff','still','sting','stir','stock','stone','stool','stop','store','storm','story','stove','strange','street','stretch','strong','stub','stubborn','study','stumble','stupid','such','suggest','sun','sure','surprise','swam','swear','sweat','sweep','swift','swing','sword','symbol','sympathy','table','tail','take','tale','talk','tall','tangle','tank','tap','task','taxi','tea','teach','teacher','tear','ten','tender','tent','terrible','than','thank','thankful','that','the','theatre','theft','their','them','then','there','these','they','thick','thin','think','this','thorn','those','though','thread','thrill','throat','through','throw','thus','tick','ticket','tide','tidy','tie','till','tilt','time','timid','tip','tire','tired','to','today','toe','together','toilet','tolerant','toll','tone','too','tool','tooth','top','toss','touch','tough','tourist','tow','town','train','travel','tray','treasure','tree','tremble','trick','trim','trip','triumph','trot','true','trust','try','tube','tuck','tug','tunnel','turn','two','type','ugly','umbrella','under','understand','ungrateful','university','until','up','upload','upset','urge','urgent','us','use','useful','usually','vacation','vague','vain','valley','van','vanish','vast','veil','very','view','vigilant','village','villain','vine','visit','vital','vivid','voice','void','wage','wait','wake','walk','wall','wander','want','ward','warm','warn','was','waste','watch','water','wave','way','we','wear','web','weed','week','weep','weird','welcome','well','were','west','wet','what','wheat','when','where','which','while','whip','whisper','who','whole','wicked','wide','wild','will','willing','win','wind','window','wing','wipe','wire','wise','wish','wit','with','within','without','woke','wolf','wonder','wonderful','wood','word','work','world','worn','worried','worthy','would','wrap','write','wrong','yard','year','yell','yes','you','young','your','zone','zoo'],
+inter:['abandon','abide','abolish','abroad','absorb','abstract','abundance','accelerate','access','accessible','accommodate','accomplish','accountability','accumulate','accurate','achievement','acknowledge','acquire','activate','activism','acute','adapt','adaptability','adequate','adjacent','adjust','administer','admirable','admire','adolescent','adopt','advocacy','advocate','aesthetic','affect','affirm','aggravate','aggregate','aggressive','agile','agreeable','akin','alertness','align','alignment','alleviate','allocate','allocation','alter','ambiguity','ambiguous','ambition','ambitious','amplify','analyze','animate','anticipate','anticipation','apparent','appeal','appease','applicable','application','appoint','appreciate','approach','appropriate','approval','approve','approximate','aptitude','ardent','argument','array','articulate','aspect','aspiration','aspire','assemble','assess','assessment','assign','assist','assistance','assume','assumption','attain','attainment','attentive','attitude','attribute','authority','authorization','authorize','autonomy','aware','awareness','barrier','benchmark','blueprint','boost','boundary','brainstorm','breakthrough','broaden','burden','bypass','calculate','calibrate','capability','capable','capacity','capitalize','captivate','capture','categorize','centralize','certification','certify','challenge','channel','characterize','circulate','circumstance','cite','clarify','clarity','classify','coherence','coincide','collaborate','collaboration','combat','combine','commit','commitment','communicate','communication','compensate','compensation','competence','competency','compile','complement','complex','complexity','component','compose','comprehend','comprehension','compromise','conceive','concentrate','concentration','concept','conceptualize','conclude','conduct','confidence','confident','conflict','conform','confront','connect','conquer','consensus','consequence','consistency','consistent','consolidate','constitute','consume','contemplate','context','contextualize','continuity','contrast','contribute','contribution','controversial','controversy','convenient','convert','conviction','convince','coordinate','coordination','cope','correspond','creativity','credibility','credible','criteria','crucial','cultivate','cumulative','curious','customize','cycle','data','deadline','debate','decision','decrease','dedicate','dedication','deficiency','define','delegate','deliberate','delivery','demand','demonstrate','demonstration','depend','dependency','deploy','derive','design','designate','despite','detect','determination','determine','develop','development','devote','diagnose','difference','differentiate','differentiation','diligence','dimension','diminish','direct','direction','directive','discernment','disclose','discuss','disrupt','distinct','distinguish','distribute','diverse','diversity','document','domain','dominant','dominate','draft','drive','dynamic','educate','effectiveness','efficiency','efficient','elaborate','element','elevate','eliminate','emerge','emergence','emphasize','empower','empowerment','enable','endure','enforce','engage','engagement','enhance','enrich','ensure','entail','environment','equip','escalate','establish','estimate','evaluate','evaluation','evidence','evolution','evolve','examine','exceed','excel','excellence','execute','expand','expect','expectation','expedite','expertise','explicit','exploration','explore','expose','exposure','extend','facilitate','factor','flexibility','flexible','focus','formulate','foster','framework','fulfill','function','gather','generate','global','goal','govern','governance','grasp','growth','guidance','guide','harness','heighten','highlight','hypothesis','identification','identify','illustrate','impact','implement','implementation','impose','improve','improvement','incentivize','incorporate','indicate','infer','influence','initiate','initiative','innovate','innovation','insight','inspire','integrate','integration','interpret','interpretation','investigate','justification','justify','knowledge','launch','leadership','leverage','limitation','link','logic','loyalty','maintain','maintenance','management','maximize','measure','mechanism','mediate','minimize','model','modify','momentum','monitor','motivate','motivation','navigate','negotiate','network','nurture','objective','observation','observe','obtain','opportunity','optimize','orchestrate','organize','outcome','outline','overcome','ownership','participate','perceive','perform','performance','permit','perspective','plan','policy','potential','predict','prevent','prioritize','priority','proactive','process','productive','productivity','progress','promote','propose','provide','pursue','qualify','quality','quantify','rationale','recognize','recommend','reconcile','redefine','reduce','refine','reflect','regulate','reinforce','reject','relevance','relevant','replicate','represent','require','research','reshape','resolution','resolve','respond','responsibility','restore','restrict','result','retain','reveal','review','revise','scale','scenario','scope','seek','shift','significance','significant','simplify','simulate','situation','skill','solution','solve','specific','standardize','stimulate','strategy','streamline','strengthen','structure','succeed','success','summarize','support','sustain','sustainability','synthesize','system','target','teamwork','tendency','theory','timeline','transform','transformation','transition','translate','typical','unify','unique','update','urgency','utilize','validate','value','variety','verify','vision','volunteer','widespread'],
+adv:['abase','abate','aberrant','aberration','abeyance','abhor','abjure','abnegate','abrasive','abrogate','abscond','abstain','abstemious','abstruse','accolade','acerbic','acquiesce','acquiescent','acrimony','acumen','adamance','adamant','admonish','adroit','adulation','adulterate','adversarial','affable','affectation','aggrandize','agitate','alacrity','aloof','altruism','altruistic','amalgamate','ambivalence','ameliorate','amiable','amicable','anachronism','anarchy','anomaly','antagonize','antipathy','antithesis','apathetic','apathy','aphorism','apprehensive','arbitrariness','archaic','archetype','ardor','arduous','ascertain','ascetic','assiduous','assuage','astute','atone','atrophy','attenuate','audacious','augment','auspicious','austere','avarice','aversion','avid','banal','bedlam','beguile','belabor','belittle','belligerent','bemoan','benevolent','berate','beseech','besmirch','blatant','blithe','bolster','bombastic','brazen','brevity','brusque','cajole','callous','candor','capitulate','capricious','castigate','catalyst','catharsis','caustic','cavalier','censure','charisma','charlatan','chastise','chronic','circumspect','circumvent','clamor','clandestine','clemency','coalesce','coerce','cogent','collude','compel','complacency','complacent','complicit','concede','conceit','condescend','condone','conflate','confound','contrite','convoluted','copious','corroborate','credulous','culpable','cunning','cynicism','daunt','dauntless','dearth','debacle','debilitate','debunk','decorum','deference','defunct','deliberate','demagogue','demean','denigrate','denounce','deride','desolate','despondent','detrimental','devious','diatribe','didactic','digress','dilettante','diligent','discern','discredit','disdain','disparage','dissent','distort','docile','dogmatic','dormant','duplicity','ebullient','eccentric','efficacy','egotism','egregious','elegy','elicit','eloquent','elusive','embody','embolden','eminent','empathy','emulate','enigmatic','ephemeral','equitable','eradicate','erudite','espouse','estrangement','euphemism','exacerbate','exalt','exasperate','exemplary','exonerate','exorbitant','extol','exuberant','fabrication','fallacious','fastidious','feign','fervent','fickle','flagrant','flaunt','flippant','foreboding','forthright','fraudulent','frugal','furtive','futile','garner','garrulous','gluttony','grandiose','grapple','gratuitous','gregarious','guile','harangue','haughty','hubris','humiliate','hyperbole','hypocrisy','iconoclast','ignoble','ignominious','imbue','imminent','immutable','impasse','impede','imperious','impetuous','implore','inadvertent','incisive','incite','indignation','indolence','ineptitude','inevitable','infamous','ingenuity','iniquity','insidious','insinuate','insolent','instigate','integrity','intransigent','intrepid','invective','irreverent','jaded','jeopardize','jovial','juxtapose','kindle','laconic','lambaste','lament','lampoon','languid','languish','laud','lavish','lethargy','levity','libel','lofty','loquacious','lucid','lucrative','ludicrous','machination','magnanimous','malevolent','malfeasance','malicious','malleable','manifest','maverick','meander','menace','mendacious','mercenary','meticulous','militant','mitigate','morose','mundane','muse','narcissism','nefarious','negate','nihilism','nonchalant','nostalgia','noxious','nullify','obfuscate','oblivious','obsequious','obstinate','ominous','onerous','opaque','opulent','ostentatious','ostracize','overbearing','pacify','paradox','patronizing','pedantic','perfunctory','pernicious','perturb','petulant','placate','platitude','plausible','poignant','pompous','pragmatic','pragmatism','precarious','preposterous','presumptuous','pretentious','prevalent','procrastinate','profound','prolific','provoke','prudent','quandary','quell','rancor','rebuke','recant','recluse','rectify','redeem','relent','relinquish','reluctant','remorse','reprimand','reproach','repudiate','resentment','resilience','reticent','retort','revile','rhetoric','righteous','rigorous','ruthless','sanctimonious','sarcastic','sardonic','scathing','scoff','scorn','scrutinize','serendipity','serene','servile','shrewd','sinister','skeptical','slander','sloth','solace','solemn','sophistry','spurious','squander','stigma','stoic','strident','strife','subjugate','submissive','subversive','subvert','succumb','superficial','superfluous','supplant','surmise','susceptible','sycophant','taciturn','taunt','tedious','temerity','temperance','tenacious','tirade','torment','torpid','transgress','treacherous','treachery','trite','trivial','tumultuous','turbulent','tyranny','ubiquitous','unconscionable','undermine','unscrupulous','usurp','vacuous','valor','vanquish','vehement','venerate','vengeance','verbose','vex','vile','vindicate','vindictive','virtuous','virulent','volatile','voracious','wanton','wary','wayward','whimsical','wield','wistful','wrath','yearn','zealous'],
+biz:['accountability','acquisition','advisory-board','affiliate','agency-model','agile','alignment','allocate','amortize','analytics','annual-report','annuity','asset','asset-management','audit','automation','b2b','b2c','backlog','balance','balanced-scorecard','benchmark','blockchain','bonus','bottom-line','brand','brand-equity','brand-loyalty','branding','break-even','budget','burnrate','business-intelligence','buyback','buyout','capital','capital-markets','cashflow','channel','client','client-retention','churn','coalition','commission','commodity','compliance','consultant','consumer','content-marketing','contingency-plan','contract','conversion','cost-benefit','creditor','cross-sell','customer','customer-experience','customer-journey','dashboard','data','deadline','deal','debt-financing','default','deficit','delegate','deliverable','demand','deployment','derivative','design','differentiation','digital','digital-transformation','direct-sales','dividend','domain','downsizing','early-adopter','efficiency','elevator-pitch','embargo','employee-engagement','equity','equity-financing','escalate','escrow','evaluation','execution','exit-strategy','expansion','expenditure','expense','expertise','feasibility','feedback','fiduciary','fiscal','flexibility','flywheel','forecast','framework','fund-raise','goodwill','governance','gross-margin','gross-profit','growth','growth-hacking','headcount','headquarters','hedge','high-performance','human-capital','impact','incentive','income-statement','incorporate','innovation','insight','insolvency','inventory','invoice','joint-venture','key-account','key-result','leadership','lean','leverage','liability','licensing','liquidate','liquidity','logistics','management','margin','market-analysis','market-cap','market-entry','market-fit','market-leader','market-penetration','market-research','market-segment','market-share','market-trend','marketing','mediation','meeting','mentorship','merger','metrics','milestone','minimum-viable','mission','model','momentum','monetization','monthly-recurring','negotiate','net-income','net-margin','net-promoter','network','niche','offer-letter','onboarding','operating-margin','operations','opportunity','optimization','organization','outcome','outsource','overhead','paid-acquisition','pain-point','partnership','performance-based','pipeline','platform','policy','portfolio','positioning','pricing-model','pricing-strategy','procurement','product-launch','product-roadmap','productivity','profit','profitability','project-management','proposal','prototype','quality','quarterly','quota','rapid-prototype','rebranding','recession','recruit','recurring-revenue','referral','reporting','resource','restructuring','retention','revenue','revenue-forecast','revenue-growth','revenue-model','risk','risk-management','roadmap','royalty','sales','sales-cycle','sales-funnel','sales-pipeline','scalability','seed-round','segment','service','shareholder','shareholder-value','signing-bonus','silo','smart-goal','social-proof','solution','solvency','stakeholder','startup','stock-option','strategic-planning','strategy','subscription','subsidiary','subsidy','supply','sustainability','synergy','takeover','talent','talent-acquisition','target','target-audience','target-market','tariff','technology','term-sheet','thought-leadership','timeline','total-addressable','traction','trademark','training','transaction','transformation','turnover','underperform','valuation','value','venture','venture-capital','viability','viral-growth','visibility','vision','volatility','warranty','wholesale','win-rate','workflow','workforce','working-capital','yield'],
+acad:['abstract','abstract-reasoning','abstraction','academic-citation','academic-discourse','academic-integrity','academic-journal','academic-literature','accountability','accreditation','accuracy','acknowledge','action-research','active-learning','affirmation','agency','agent-based','aggregate','algorithm','alignment','ambiguity','analogy','analytical-framework','annotation','anonymity','appendix','assertion','assessment','assumption','attribution','authenticity','axiom','behavioral','behavioral-economics','benchmark','bibliographic','bibliography','binary-thinking','blended-learning','calibrate','canon','categorization','causal','causal-inference','causality','citation','cite','claim','classify','cluster','coefficient','cognitive','cognitive-bias','cognitive-development','coherent','cohort','collaboration','comparative-analysis','competency','compile','concept-mapping','conceptual','conceptualization','conclude','confounding','construct','content-analysis','context','contradict','contribution','control-group','correlate','counterargument','credibility','criterion','critical-analysis','critical-inquiry','critical-pedagogy','critique','cross-cultural','cross-disciplinary','cultural-context','curriculum','data-analysis','data-triangulation','dataset','debate','deconstruct','deduce','deduction','deductive-reasoning','define','deliberation','demographic','demonstrate','denote','derive','descriptive','descriptive-statistics','design','determination','developmental-theory','deviation','dialectic','dichotomy','discourse','dissertation','documentation','domain','double-blind','educational-psychology','effect-size','elaboration','empirical','empirical-evidence','empirical-study','epistemological','epistemology','error-margin','ethics','ethnography','evaluate','evidence','examination','experimental-design','expertise','explanation','explication','extrapolate','face-validity','falsifiability','fieldwork','findings','focus-group','formative-assessment','framework','generalizability','generalization','grounded','hermeneutics','heuristic','hierarchical','historical-context','holistic-assessment','hypothesis','ideological-framework','implication','implicit-bias','induction','inductive','inequality','infer','inference','inferential-statistics','information-literacy','informed-consent','inquiry','insight','institutional-context','instrument','interdisciplinary','interpret','interpretation','iterative','journal','justification','knowledge','knowledge-claim','knowledge-gap','latent','learning-objective','legitimacy','lexical','linguistic','literature','longitudinal','marginalization','measurement','methodology','mixed-method','model','narration','narrative','needs-assessment','normative','objectivity','observation','ontology','operationalize','outcome-variable','paradigm','paraphrase','participant','participatory-research','pedagogy','peer-assessment','peer-review','phenomenology','pilot','plagiarism','population','positionality','positivism','postulate','qualitative','qualitative-coding','quantify','quantitative','questionnaire','randomization','reasoning','reference','reflexivity','refute','regression','reliability','replication','research','research-design','research-ethics','research-gap','research-methodology','research-question','research-validity','rhetoric','rigor','sample','sampling-strategy','saturation','scholarly','scientific-method','scope','secondary-source','semantic','semantic-analysis','seminal','semiotics','significance','simulation','situational-analysis','social-construct','social-learning','statistical','statistical-analysis','statistical-inference','structured-interview','subgroup','subjective','summarize','survey','synthesize','systematic-review','taxonomy','thematic','thematic-analysis','theoretical','theoretical-framework','thesis','thick-description','transfer','transferability','triangulation','typology','validity','variable','variance','verbal-data','verification','within-group','worldview'],
+tech:['AI','API','backend','bandwidth','boolean','browser','bug','cache','chatbot','CLI','cloud','code','compiler','cookie','CPU','CSS','cursor','data','database','debug','deep-learning','deploy','desktop','DNS','docker','domain','download','encryption','endpoint','error','file','firewall','frontend','function','GPU','hardware','host','HTML','HTTP','HTTPS','hyperlink','index','input','interface','IP','JavaScript','kernel','keyboard','latency','library','Linux','localhost','log','loop','machine-learning','memory','model','mouse','network','neural-network','node','null','object','open-source','operating-system','output','package','parameter','password','patch','pixel','plugin','port','privacy','processor','program','prompt','protocol','proxy','Python','query','RAM','repository','request','response','router','runtime','script','SDK','search-engine','server','software','spam','SQL','SSL','storage','string','syntax','terminal','token','training','URL','USB','user','variable','version','virtual','virus','VPN','web','webhook','WiFi','window','workflow','zero-day'],
+news:['GDP','NGO','abdicate','abolish','accusation','activist','adjudicate','allegation','allegiance','alliance','ambassador','amnesty','annex','appeal','appease','appoint','apprehend','arbitration','armistice','arraign','arrest','arson','assassination','assault','assembly','asylum','atrocity','austerity','authoritarian','autonomous','backlash','bailout','ballot','ban','battalion','belligerent','bilateral','blockade','bombardment','boycott','breach','breaking-news','bribe','briefing','broadcast','budget','bunker','bureaucracy','cabinet','campaign','casualty','ceasefire','censorship','civilian','clampdown','clash','coalition','collapse','communique','condemnation','confiscate','confrontation','conspiracy','conviction','corruption','coup','crackdown','credentials','curfew','custody','cybersecurity','deadline','debate','decree','defeat','defection','deficit','defy','democracy','denounce','depose','deportation','destabilize','detention','deter','devastate','dictator','diplomat','disclose','dismantle','displaced','dispute','dissident','dissolve','dominate','dossier','drought','editorial','election','electorate','embargo','emissary','enforce','epidemic','evacuate','exclusive','execution','exile','explosive','extradite','extremist','faction','famine','fatalities','federal','footage','fraud','fugitive','genocide','geopolitics','guerrilla','halt','hardliner','headline','hostage','humanitarian','ideology','impeach','impose','incident','informant','insurgent','intelligence','intercept','interrogate','invade','investigation','journalist','judicial','junta','jurisdiction','kidnap','landslide','launch','lawsuit','leaflet','legislation','looting','massacre','militia','minister','missile','mobilize','moratorium','mourning','multilateral','neutrality','objection','offensive','official','opposition','outrage','overthrow','parliament','partisan','patrol','penalty','perpetrate','persecute','petition','pledge','polarize','precedent','probe','propaganda','prosecution','protest','punitive','rebel','recession','recovery','reform','refugee','regime','regulation','rehabilitate','release','renounce','reparations','reporter','repression','resign','resilience','resistance','resolution','retaliate','retract','retreat','rhetoric','riot','sanction','secession','senator','separatist','shelling','siege','slaughter','smuggle','sovereignty','spokesperson','standoff','statement','stimulus','strike','subversion','summit','suppress','surrender','surveillance','suspect','suspend','tactical','tariff','terrorism','testimony','totalitarian','trafficking','tribunal','truce','ultimatum','unilateral','unrest','uprising','verdict','veto','violation','warfare','whistleblower','withdraw','airstrike','ammunition','ambush','commando','counterattack','encircle','firefight','frontline','garrison','grenade','gunfire','infantry','landmine','mortar','munitions','peacekeeping','radar','raid','reconnaissance','resistance','rocket','sniper','warzone','broadcast','clickbait','correspondent','coverage','denial','expose','fact-check','impartial','leak','misinformation','scoop','transparency','unverified','biodiversity','carbon','catastrophe','climate','contaminate','ecosystem','emission','endangered','erosion','evacuation','extinction','fossil-fuel','glacier','global-warming','habitat','hurricane','natural-disaster','outbreak','pandemic','pollution','reforestation','renewable','scarcity','typhoon','wildfire','algorithm','artificial-intelligence','automation','cryptocurrency','cybersecurity','deepfake','disinformation','hack','platform','technology']
+};
+
+const VCN={'ability':'能力','absence':'缺席','accent':'口音/重音','accept':'接受','accident':'意外/事故','account':'账户/叙述','ache':'疼痛','achieve':'实现/达到','across':'穿越/横过','action':'行动','activity':'活动','actor':'演员','actually':'实际上','address':'地址/演讲','adult':'成人','advice':'建议','afraid':'害怕','age':'年龄/时代','agree':'同意','ahead':'在前方','air':'空气','airport':'机场','alarm':'警报/闹钟','alert':'警觉/警告','alike':'相似地','allow':'允许','almost':'几乎','alone':'独自','already':'已经','although':'尽管','always':'总是','amount':'数量/金额','amuse':'逗笑/娱乐','angry':'生气的','animal':'动物','ankle':'脚踝','annoy':'烦扰','answer':'回答','anxious':'焦虑的','apartment':'公寓','apologize':'道歉','appear':'出现/似乎','apply':'申请/应用','area':'地区/面积','arrange':'安排','arrive':'到达','art':'艺术','artist':'艺术家','ask':'问/要求','attach':'附上','attempt':'尝试','attention':'注意力','aunt':'阿姨','available':'可获得的','awake':'醒着的','aware':'意识到的','awful':'糟糕的','awkward':'尴尬的','baby':'婴儿','back':'背部/返回','bad':'坏的','bake':'烘烤','balance':'平衡','ball':'球','bank':'银行','bargain':'便宜货/讨价还价','bath':'洗澡','beach':'海滩','beat':'打/击败','beautiful':'美丽的','become':'成为','bedroom':'卧室','believe':'相信','bend':'弯曲','benefit':'好处/利益','beside':'在旁边','betray':'背叛','better':'更好的','bicycle':'自行车','bill':'账单','bird':'鸟','birthday':'生日','bite':'咬','blanket':'毯子','blend':'混合','blind':'盲的','blow':'吹/打击','board':'板/登上/委员会','boat':'船','body':'身体','bold':'大胆的','bone':'骨头','book':'书/预订','boring':'无聊的','borrow':'借入','boss':'老板','bottle':'瓶子','bounce':'弹跳','bowl':'碗','box':'箱子','branch':'树枝','brave':'勇敢的','bread':'面包','break':'打破/休息','breakfast':'早餐','bridge':'桥','bring':'带来','brother':'兄弟','brush':'刷子','build':'建造','building':'建筑','burn':'燃烧','busy':'忙碌的','button':'按钮','buy':'购买','cafe':'咖啡馆','cake':'蛋糕','call':'呼叫/打电话','calm':'平静的','camera':'相机','camp':'营地','candle':'蜡烛','car':'汽车','card':'卡片','care':'关心','careful':'小心的','carry':'携带','catch':'抓住','cause':'原因/导致','ceiling':'天花板','celebrate':'庆祝','certain':'确定的','chair':'椅子','change':'改变','chapter':'章节','charge':'费用/充电/指控','charm':'魅力','cheap':'便宜的','check':'检查','cheese':'奶酪','chef':'厨师','chicken':'鸡','child':'孩子','chocolate':'巧克力','choose':'选择','church':'教堂','city':'城市','clean':'干净的/清洁','clear':'清晰/明确','climb':'攀登','clock':'时钟','close':'关闭/近的','clothes':'衣服','cloud':'云','coach':'教练','coffee':'咖啡','cold':'寒冷的','collect':'收集','college':'大学','color':'颜色','come':'来','comfortable':'舒适的','company':'公司','compare':'比较','complete':'完成/完整的','computer':'电脑','concern':'担忧/关心','concert':'音乐会','connect':'连接','consider':'考虑','continue':'继续','control':'控制','cook':'烹饪','cool':'凉爽/酷','copy':'复制','correct':'正确的','cost':'费用/花费','count':'计数','country':'国家','court':'法院/球场','cover':'覆盖/封面','crash':'碰撞/崩溃','crazy':'疯狂的','create':'创造','crowd':'人群','cruel':'残忍的','cry':'哭','cure':'治愈','cut':'切','dad':'爸爸','dance':'跳舞','danger':'危险','dark':'黑暗/深色','date':'日期/约会','dawn':'黎明','deal':'交易','decide':'决定','deep':'深的','defeat':'击败/失败','delay':'延迟','delight':'高兴/愉悦','deliver':'递送/交付','dentist':'牙医','depend':'依赖','describe':'描述','desert':'沙漠/甜点','desk':'书桌','different':'不同的','difficult':'困难的','dig':'挖掘','dinner':'晚餐','direction':'方向','dirty':'脏的','discuss':'讨论','dish':'菜肴','distance':'距离','dizzy':'头晕的','dog':'狗','door':'门','dream':'梦/梦想','dress':'连衣裙/穿着','drink':'喝/饮料','drive':'驾驶','drop':'滴/掉落','dry':'干燥的','during':'在…期间','each':'每个','early':'早的','earn':'赚','easy':'容易的','eat':'吃','edge':'边缘','effect':'效果/影响','email':'电子邮件','embarrass':'使尴尬','embrace':'拥抱','emergency':'紧急情况','empty':'空的','enjoy':'享受','enormous':'巨大的','enough':'足够','enter':'进入','escape':'逃跑','event':'事件','every':'每个','exam':'考试','example':'例子','except':'除了','exercise':'运动/练习','exit':'出口','experience':'经验/体验','explain':'解释','face':'脸/面对','factory':'工厂','fail':'失败','fair':'公平的/集市','fall':'秋天/跌落','family':'家庭','farm':'农场','fast':'快速的','fear':'恐惧','feature':'特征/特色','feel':'感觉','festival':'节日','fever':'发烧','fight':'战斗/打架','fill':'填充','find':'找到','fine':'好的/罚款','finish':'完成','fire':'火/解雇','fish':'鱼','fix':'修复','flag':'旗帜','flat':'平坦的/公寓','float':'漂浮','flood':'洪水','floor':'地板','flow':'流动','flower':'花','fly':'飞','follow':'跟随','food':'食物','foot':'脚','forest':'森林','forget':'忘记','form':'形式/表格','freeze':'冻结','friend':'朋友','fruit':'水果','full':'满的','funny':'有趣的','future':'未来','gain':'获得','game':'游戏','garden':'花园','gift':'礼物','girl':'女孩','give':'给','glad':'高兴的','glass':'玻璃/杯子','goal':'目标','gold':'黄金','good':'好的','gossip':'八卦','grab':'抓取','grade':'等级/成绩','grass':'草','grateful':'感激的','great':'伟大的','green':'绿色','greet':'问候','grief':'悲痛','grow':'生长','guard':'守卫','guess':'猜测','guest':'客人','guide':'指导/向导','guitar':'吉他','gym':'健身房','habit':'习惯','hair':'头发','happen':'发生','happy':'快乐的','hard':'硬的/努力地','harm':'伤害','heal':'治愈','health':'健康','hear':'听','heart':'心脏/心','heat':'热量','heavy':'重的','help':'帮助','hero':'英雄','hide':'隐藏','high':'高的','hill':'山丘','hold':'握住/持有','home':'家','honest':'诚实的','hope':'希望','horrible':'可怕的','hospital':'医院','hot':'热的','hotel':'酒店','hour':'小时','house':'房子','hug':'拥抱','hungry':'饥饿的','hurry':'匆忙','hurt':'受伤/伤害','ice':'冰','idea':'想法','ignore':'忽视','important':'重要的','include':'包括','inside':'里面','instead':'代替','interest':'兴趣','invite':'邀请','island':'岛屿','jacket':'夹克','jealous':'嫉妒的','job':'工作','join':'加入','journey':'旅程','joy':'喜悦','juice':'果汁','jump':'跳跃','keep':'保持','key':'钥匙/关键','kick':'踢','kind':'善良的/种类','kitchen':'厨房','know':'知道','lake':'湖','land':'陆地/降落','language':'语言','large':'大的','laugh':'笑','learn':'学习','leave':'离开/叶子','lecture':'讲座','legend':'传说','lend':'借出','life':'生命/生活','light':'光/轻的','like':'喜欢/像','line':'线/排队','listen':'听','live':'居住/活着','lock':'锁','long':'长的','look':'看','lose':'失去/输','love':'爱','lunch':'午餐','mad':'生气的/疯狂的','make':'制作/使','manage':'管理','map':'地图','market':'市场','matter':'重要/事情','meal':'饭','mean':'意思/刻薄的','meet':'见面','menu':'菜单','message':'信息','mind':'思想/介意','miss':'想念/错过','mistake':'错误','money':'钱','morning':'早晨','mountain':'山','move':'移动','movie':'电影','much':'许多','museum':'博物馆','music':'音乐','mysterious':'神秘的','name':'名字','near':'近的','need':'需要','night':'夜晚','noise':'噪音','note':'笔记/注意','notice':'注意/通知','now':'现在','obey':'服从','ocean':'海洋','offer':'提供','office':'办公室','often':'经常','open':'打开','orange':'橙子/橙色','order':'命令/订购','pack':'包装/背包','paint':'油漆/画画','panic':'恐慌','paradise':'天堂','park':'公园/停车','part':'部分','passion':'激情','path':'小径','patient':'耐心的/病人','pay':'支付','perfect':'完美的','phone':'电话','photo':'照片','pick':'挑选/摘','picture':'图片','place':'地方','plan':'计划','plant':'植物/种植','play':'玩/演出','please':'请/取悦','police':'警察','polite':'礼貌的','pool':'游泳池/水坑','pour':'倒','practice':'练习','prepare':'准备','press':'按压/新闻','price':'价格','print':'打印','problem':'问题','promise':'承诺','proud':'自豪的','pull':'拉','push':'推','quiet':'安静的','rain':'雨','raise':'举起/提高','reach':'到达/够到','ready':'准备好的','relax':'放松','remember':'记得','rent':'租金','repair':'修理','rest':'休息','restaurant':'餐厅','return':'返回','reward':'奖励','right':'正确的/右边','risk':'风险','river':'河流','road':'道路','rock':'岩石/摇滚','room':'房间','rule':'规则/统治','run':'跑','sad':'悲伤的','safe':'安全的','school':'学校','search':'搜索','season':'季节','sell':'卖','send':'发送','sensitive':'敏感的','share':'分享','sharp':'锋利的','shop':'商店/购物','show':'展示/节目','sign':'标志/签名','simple':'简单的','sink':'水槽/下沉','sit':'坐','size':'尺寸','skin':'皮肤','skip':'跳过/略过','sky':'天空','sleep':'睡觉','small':'小的','smile':'微笑','snow':'雪','song':'歌曲','sorry':'对不起','sound':'声音/听起来','space':'空间','speak':'说话','spend':'花费','sport':'运动','stand':'站立','star':'星星/明星','start':'开始','stay':'停留','stick':'粘住/棍子','stop':'停止','store':'商店/储存','storm':'暴风雨','story':'故事','strange':'奇怪的','street':'街道','strong':'强壮的','study':'学习','sun':'太阳','surprise':'惊喜','table':'桌子','talk':'谈话','tall':'高的','task':'任务','teach':'教','tear':'眼泪/撕裂','tent':'帐篷','terrible':'可怕的','thank':'感谢','think':'思考','ticket':'票','time':'时间','tired':'疲倦的','today':'今天','together':'一起','tooth':'牙齿','touch':'触摸','tourist':'游客','town':'城镇','train':'火车/训练','travel':'旅行','treasure':'宝藏','tree':'树','trick':'把戏/欺骗','trust':'信任','try':'尝试','turn':'转弯/轮到','ugly':'丑陋的','umbrella':'雨伞','understand':'理解','university':'大学','upset':'沮丧的/打翻','urge':'强烈要求','useful':'有用的','vacation':'假期','valley':'山谷','vanish':'消失','very':'非常','view':'视野/观点','village':'村庄','visit':'参观','vivid':'生动的','voice':'声音','wait':'等待','walk':'走路','wall':'墙','wander':'漫游','want':'想要','warm':'温暖的','warn':'警告','waste':'浪费','watch':'手表/观看','water':'水','wave':'波浪/挥手','wear':'穿','week':'星期','weird':'奇怪的','welcome':'欢迎','whisper':'耳语','wide':'宽的','wild':'野生的','win':'赢','window':'窗户','wise':'明智的','wish':'愿望/希望','wood':'木头','word':'单词','work':'工作','world':'世界','worry':'担心','wrap':'包裹','write':'写','wrong':'错误的','yard':'院子','year':'年','young':'年轻的','zone':'区域','zoo':'动物园','abandon':'放弃','absorb':'吸收','abundance':'丰富','accelerate':'加速','access':'访问/获取','accommodate':'容纳/适应','accomplish':'完成','accumulate':'积累','accurate':'准确的','achievement':'成就','acknowledge':'承认','acquire':'获得','adapt':'适应','adequate':'足够的','adjust':'调整','admire':'钦佩','adolescent':'青少年','adopt':'采纳/收养','advocacy':'倡导','advocate':'倡导者','aesthetic':'美学的/审美的','affirm':'肯定','aggressive':'积极进取的/激进的','agile':'敏捷的','align':'对齐/使一致','alleviate':'缓解/减轻','allocate':'分配','alter':'改变/修改','ambiguity':'模糊性','ambitious':'有雄心的','amplify':'放大/增强','anticipate':'预期/预见','appreciate':'欣赏/感激','appropriate':'适当的','array':'一系列','articulate':'清晰表达','assess':'评估','assume':'假设/承担','attain':'达到/实现','attitude':'态度','authority':'权威/当局','autonomy':'自主性','awareness':'意识/认知','barrier':'障碍','benchmark':'基准/标杆','boost':'促进/提升','boundary':'边界/界限','brainstorm':'头脑风暴','breakthrough':'突破','capability':'能力/才能','capable':'有能力的','capacity':'容量/能力','categorize':'分类','challenge':'挑战','clarify':'澄清/说明','clarity':'清晰/明确','collaborate':'合作','collaboration':'合作/协作','commitment':'承诺/投入','communicate':'沟通/传达','compensate':'补偿','competence':'能力/胜任','complement':'补充/配合','complexity':'复杂性','comprehend':'理解','compromise':'妥协/折中','concentrate':'集中/专注','confidence':'信心/自信','consensus':'共识','consequence':'后果/结果','consistency':'一致性','consistent':'一致的','consolidate':'巩固/合并','contemplate':'沉思/考虑','contribute':'贡献','controversial':'有争议的','convince':'说服','coordinate':'协调','creativity':'创造力','credibility':'可信度','crucial':'关键的','cultivate':'培养/培育','deadline':'截止时间','decision':'决定','dedication':'奉献/专注','delegate':'委托/下放','demonstrate':'证明/示范','deploy':'部署/展开','determination':'决心','develop':'发展/开发','differentiate':'区分/差异化','diligence':'勤奋','diminish':'减少/缩小','disrupt':'颠覆/扰乱','diverse':'多样的','diversity':'多样性','dynamic':'动态的/有活力的','effectiveness':'有效性','efficiency':'效率','efficient':'高效的','elaborate':'详细阐述','element':'元素/要素','eliminate':'消除/淘汰','emerge':'出现/涌现','emphasize':'强调','empower':'赋权/授权','engagement':'参与/投入','enhance':'增强/提高','ensure':'确保','escalate':'升级/加剧','establish':'建立/确立','evaluate':'评估/评价','evidence':'证据','evolve':'进化/演变','exceed':'超过/超越','excellence':'卓越/优秀','execute':'执行/实施','expertise':'专业知识','facilitate':'促进/协助','flexibility':'灵活性','formulate':'制定/表达','foster':'促进/培养','framework':'框架','fulfill':'实现/满足','generate':'产生/生成','global':'全球的','governance':'治理','growth':'增长/成长','guidance':'指导/引导','highlight':'突出/强调','hypothesis':'假设','identify':'识别/确认','illustrate':'说明/图解','impact':'影响/冲击','implement':'实施/执行','improve':'改善/提高','incentive':'激励/诱因','incorporate':'纳入/整合','indicate':'表明/指示','influence':'影响','initiate':'启动/发起','innovate':'创新','innovation':'创新','insight':'见解/洞察','inspire':'激励/启发','integrate':'整合/融合','interpret':'解释/诠释','investigate':'调查/研究','justify':'证明正当/辩护','knowledge':'知识','leadership':'领导力','leverage':'杠杆/利用','limitation':'限制/局限','maintain':'维持/保持','management':'管理','maximize':'最大化','mechanism':'机制','mediate':'调解/斡旋','minimize':'最小化','momentum':'动力/势头','monitor':'监控/监督','motivate':'激励/驱动','motivation':'动机/激励','navigate':'导航/应对','negotiate':'谈判/协商','network':'网络/人脉','nurture':'培养/培育','objective':'目标/客观的','observe':'观察/遵守','opportunity':'机会','optimize':'优化','organize':'组织/安排','outcome':'结果/成果','overcome':'克服/战胜','participate':'参与','perceive':'感知/认为','performance':'表现/绩效','perspective':'观点/角度','predict':'预测','prioritize':'优先处理','productivity':'生产力','promote':'促进/晋升','pursue':'追求','recognize':'认识/认可','recommend':'推荐/建议','reduce':'减少/降低','reflect':'反思/反映','relevant':'相关的','require':'需要/要求','research':'研究','resolve':'解决/决心','responsibility':'责任','retain':'保留/保持','reveal':'揭示/透露','revise':'修订/修改','scale':'规模/扩大','scope':'范围','shift':'转变/移位','significant':'重要的/显著的','simplify':'简化','simulate':'模拟','solution':'解决方案','strategy':'策略/战略','structure':'结构/框架','succeed':'成功','summarize':'总结/概括','sustainability':'可持续性','synthesize':'综合/合成','system':'系统','target':'目标','teamwork':'团队合作','theory':'理论','transform':'转变/改变','transition':'过渡/转变','unique':'独特的','urgency':'紧迫性','utilize':'利用/使用','validate':'验证/确认','value':'价值/重视','verify':'核实/验证','vision':'愿景/视野','serendipity':'意外之喜/偶然发现美好事物','ephemeral':'短暂的/转瞬即逝的','resilience':'韧性/恢复力'};
+
+async function getCN(word){
+  const base=word.toLowerCase();
+  if(VCN[base])return VCN[base];
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(base));
+    const d=await r.json();
+    if(Array.isArray(d)&&d[0]){
+      const ms=d[0].meanings||[];
+      if(ms.length&&ms[0].definitions.length)return ms[0].partOfSpeech+': '+ms[0].definitions[0].definition.slice(0,40);
+    }
+  }catch(e){}
+  return '';
+}
+
+if(!words.length){
+  words=[
+    {id:1,word:'serendipity',ipa:'ˌserənˈdɪpɪti',pos:'n.',cn:'意外发现美好事物的运气',kr:'',exEn:'Finding this café was pure serendipity.',exCn:'发现这家咖啡馆纯属意外的惊喜。',exKr:'',status:'new',note:'',noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''},
+    {id:2,word:'ephemeral',ipa:'ɪˈfemərəl',pos:'adj.',cn:'短暂的；转瞬即逝的',kr:'',exEn:'The beauty of cherry blossoms is ephemeral.',exCn:'樱花的美丽是短暂的。',exKr:'',status:'unf',note:'',noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''},
+    {id:3,word:'resilience',ipa:'rɪˈzɪliəns',pos:'n.',cn:'韧性；恢复力',kr:'',exEn:'She showed great resilience after the setback.',exCn:'遭受挫折后，她表现出了极大的韧性。',exKr:'',status:'fam',note:'',noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''}
+  ];
+  save();
+}
+
+// ══ 搜索跳转 ══
+function fcSearchInput(){
+  const q=(document.getElementById('fc-sinp').value||'').toLowerCase().trim();
+  const drop=document.getElementById('fc-sdrop');
+  if(!q||!words.length){drop.classList.remove('show');return;}
+  const res=words.filter(w=>w.word.toLowerCase().includes(q)||(w.cn&&w.cn.includes(q))).slice(0,8);
+  if(!res.length){drop.innerHTML='<div class="fc-drop-item" style="color:var(--tx3);">未找到</div>';drop.classList.add('show');return;}
+  drop.innerHTML=res.map(w=>`<div class="fc-drop-item" onclick="fcJump(${w.id})"><span style="font-family:'Lora',serif;font-weight:700;font-size:16px;color:${w.wordColor||'var(--tx)'};">${w.word}</span><span style="font-size:12px;color:var(--tx3);">${w.cn}</span><span style="font-size:10px;margin-left:auto;">${SE[w.status]}</span></div>`).join('');
+  drop.classList.add('show');
+}
+function fcSearchKey(e){if(e.key==='Escape')fcSearchClear();}
+function fcSearchClear(){document.getElementById('fc-sinp').value='';document.getElementById('fc-sdrop').classList.remove('show');}
+function fcJump(id){
+  let i=deck.findIndex(w=>w.id===id);
+  if(i<0){const w=words.find(x=>x.id===id);if(w){deck.unshift({...w});i=0;}}
+  if(i>=0){idx=i;flipped=false;document.getElementById('ci').classList.remove('flipped');renderCard();}
+  fcSearchClear();
+  toast('🔍 已跳转到：'+(words.find(x=>x.id===id)?.word||''));
+}
+document.addEventListener('click',e=>{if(!e.target.closest('.fc-sinp-wrap'))document.getElementById('fc-sdrop').classList.remove('show');});
+
+// ══ 富文本注释 ══
+function onNUp(e){
+  const cfn=document.getElementById('cfn'),cfi=document.getElementById('cfi'),cbn=document.getElementById('cbn');
+  const cfeEl=document.querySelector('.cfe-en');
+  const cfwEl=document.getElementById('cfw');
+  const tgt=e.target;
+  if(tgt===cfn||cfn?.contains(tgt))lne=cfn;
+  else if(cbn&&(tgt===cbn||cbn.contains(tgt)))lne=cbn;
+  else if(tgt===cfi||cfi?.contains(tgt))lne=cfi;
+  else if(cfeEl&&(tgt===cfeEl||cfeEl.contains(tgt)))lne=cfeEl;
+  else if(tgt===cfwEl||cfwEl?.contains(tgt))lne=cfwEl;
+  else lne=lne||cfn;
+  setTimeout(()=>{
+    const sel=window.getSelection();
+    if(!sel||sel.isCollapsed||!sel.toString().trim()){hideTb();return;}
+    const rng=sel.getRangeAt(0);
+    const anc=rng.commonAncestorContainer;
+    if(![cfn,cbn,cfi,cfeEl,cfwEl].some(el=>el&&el.contains(anc))){hideTb();return;}
+    savedSel=rng;
+    const rc=rng.getBoundingClientRect();
+    const tb=document.getElementById('ntb');
+    tb.style.display='flex';
+    const tw=tb.offsetWidth||360;
+    let lx=rc.left+window.scrollX+(rc.width/2)-(tw/2);
+    lx=Math.max(8,Math.min(lx,window.innerWidth-tw-8));
+    let ty=rc.top+window.scrollY-60;
+    if(ty<60)ty=rc.bottom+window.scrollY+8;
+    tb.style.left=lx+'px';tb.style.top=ty+'px';
+  },10);
+}
+function hideTb(){document.getElementById('ntb').style.display='none';}
+function apC(e,color,hl){
+  e.preventDefault();
+  if(!savedSel)return;
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedSel);
+  const cfn=document.getElementById('cfn'),cbn=document.getElementById('cbn'),cfi=document.getElementById('cfi');
+  const cfeEl=document.querySelector('.cfe-en');
+  const cfwEl=document.getElementById('cfw');
+  const cont=savedSel.commonAncestorContainer;
+  if(![cfn,cbn,cfi,cfeEl,cfwEl].some(el=>el&&el.contains(cont))){hideTb();savedSel=null;return;}
+  if(color==='clr'&&hl==='clr')wrapSpan(savedSel,null,null,true);
+  else wrapSpan(savedSel,color,hl,false);
+  if(cfi?.contains(cont))saveField('ipaHtml','cfi');
+  else if(cfeEl?.contains(cont))saveFieldEl('exEnHtml',cfeEl);
+  else if(cfwEl?.contains(cont))saveField('wordColorHtml','cfw');
+  else saveN();
+  hideTb();savedSel=null;
+}
+function apSz(e,sz){
+  e.preventDefault();
+  if(!savedSel)return;
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedSel);
+  wrapSzSpan(savedSel,sz);
+  saveN();hideTb();savedSel=null;
+}
+function wrapSzSpan(rng,sz){
+  const frag=rng.extractContents();
+  const sp=document.createElement('span');
+  sp.style.fontSize=sz+'px';
+  sp.style.fontFamily="'Microsoft YaHei','微软雅黑','Noto Sans SC',sans-serif";
+  sp.appendChild(frag);rng.insertNode(sp);
+}
+function wrapSpan(rng,color,hl,clr){
+  const frag=rng.extractContents();
+  function proc(nd){
+    if(nd.nodeType===3){
+      if(!nd.textContent||clr)return nd;
+      const sp=document.createElement('span');
+      if(color)sp.style.color=color;
+      if(hl&&hl!=='transparent')sp.style.backgroundColor=hl;
+      sp.appendChild(nd.cloneNode());return sp;
+    }
+    if(nd.nodeType===1){
+      if(clr){nd.style.removeProperty('color');nd.style.removeProperty('background-color');nd.style.removeProperty('font-size');}
+      else{if(color)nd.style.color=color;if(hl!==null){if(hl==='transparent')nd.style.removeProperty('background-color');else nd.style.backgroundColor=hl;}}
+      Array.from(nd.childNodes).forEach(c=>{const r=proc(c);if(r!==c)nd.replaceChild(r,c);});
+      return nd;
+    }
+    return nd;
+  }
+  const nf=document.createDocumentFragment();
+  Array.from(frag.childNodes).forEach(c=>nf.appendChild(proc(c)));
+  rng.insertNode(nf);
+  const par=lne||document.getElementById('cfn');
+  if(par)par.querySelectorAll('span').forEach(s=>{if(!s.style.cssText&&s.parentNode){const p=s.parentNode;while(s.firstChild)p.insertBefore(s.firstChild,s);p.removeChild(s);}});
+}
+function saveField(field,elId){
+  if(!deck.length)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id),el=document.getElementById(elId);
+  if(!o||!el)return;o[field]=el.innerHTML;w[field]=el.innerHTML;save();
+}
+function saveFieldEl(field,el){
+  if(!deck.length||!el)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id);
+  if(!o)return;o[field]=el.innerHTML;w[field]=el.innerHTML;save();
+}
+function saveN(){
+  if(!deck.length)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id);
+  if(!o)return;
+  const el=lne||document.getElementById('cfn');
+  if(!el)return;
+  o.noteHtml=el.innerHTML;o.note=el.innerText;w.noteHtml=o.noteHtml;w.note=o.note;
+  const fn=document.getElementById('cfn'),bn=document.getElementById('cbn');
+  if(el===fn&&bn)bn.innerHTML=o.noteHtml;
+  if(el===bn&&fn)fn.innerHTML=o.noteHtml;
+  save();
+}
+
+// ══ 备份 ══
+function openBk(){document.getElementById('bkc').textContent=words.length;document.getElementById('bkst').textContent='选择之前的 .json 文件恢复（合并，不删除已有）。';document.getElementById('bkf').value='';document.getElementById('bko').classList.add('show');}
+function closeBk(){document.getElementById('bko').classList.remove('show');}
+function exportBk(){
+  const now=new Date();
+  const ds=`${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}`;
+  const blob=new Blob([JSON.stringify({version:1,exportDate:now.toISOString(),words},null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`WordCards_${ds}.json`;
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url);
+  toast('✅ 已导出 '+words.length+' 个单词');
+}
+function importBk(inp){
+  const f=inp.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{
+    try{
+      const d=JSON.parse(e.target.result);
+      const imp=Array.isArray(d)?d:(d.words||[]);
+      if(!imp.length){document.getElementById('bkst').textContent='文件中没有单词数据';return;}
+      const ids=new Set(words.map(w=>w.id)),ws=new Set(words.map(w=>w.word.toLowerCase()));
+      let added=0;
+      imp.forEach(w=>{
+        if(!ids.has(w.id)&&!ws.has((w.word||'').toLowerCase())){
+          ['noteHtml','ipaHtml','exEnHtml','wordColor','wordColorHtml'].forEach(k=>{if(!w[k])w[k]='';});
+          if(!w.status||!SL[w.status])w.status='new';
+          const sm={unfamiliar:'unf',misspell:'mis',forgot:'fgt',familiar:'fam'};
+          if(sm[w.status])w.status=sm[w.status];
+          words.push(w);added++;ids.add(w.id);ws.add((w.word||'').toLowerCase());
+        }
+      });
+      save();document.getElementById('bkc').textContent=words.length;
+      document.getElementById('bkst').textContent='✅ 导入 '+added+' 个新单词，共 '+words.length+' 个';
+      if(added>0){renderList();toast('✅ 导入了 '+added+' 个单词');}else toast('没有新单词');
+    }catch(err){document.getElementById('bkst').textContent='❌ 文件读取失败';}
+  };
+  r.readAsText(f);
+}
+
+// ══ 视图切换 ══
+function showView(name,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(name==='list')renderList();
+  if(name==='fc')initFC();
+  if(name==='vocab')renderV();
+}
+
+// ══ 单词列表 ══
+let lf='all';
+function renderList(){
+  const c={new:0,unf:0,unk:0,mis:0,fgt:0,fam:0};
+  words.forEach(w=>c[w.status]=(c[w.status]||0)+1);
+  // stats bar 顺序：new unf unk mis fgt fam
+  document.getElementById('stats-bar').innerHTML=
+    `<div class="schip" onclick="setLF('all')" style="background:var(--sur2);color:var(--tx2);border-color:var(--bdr);">全部 <span style="font-family:'DM Mono',monospace;">${words.length}</span></div>`+
+    ['new','unf','unk','mis','fgt','fam'].map(s=>
+      `<div class="schip ${s}" onclick="setLF('${s}')">${SE[s]} ${SL[s]} <span style="font-family:'DM Mono',monospace;">${c[s]||0}</span></div>`
+    ).join('');
+  const fl=lf==='all'?words:words.filter(w=>w.status===lf);
+  const g=document.getElementById('word-grid'),e=document.getElementById('empty-list');
+  if(!fl.length){g.innerHTML='';e.style.display='block';return;}
+  e.style.display='none';
+  g.innerHTML=fl.map(w=>`
+    <div class="wcs" onclick="openEdit(${w.id})">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
+        <div class="wcs-w" style="color:${w.wordColor||'var(--tx)'};">${w.word}</div>
+        <div style="display:flex;align-items:center;gap:2px;flex-shrink:0;">
+          <div class="wcs-i" style="max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${w.ipa||''}</div>
+          <button onclick="event.stopPropagation();cpW(${w.id})" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 6px;color:var(--tx3);">📋</button>
+        </div>
+      </div>
+      ${w.pos?`<div class="wcs-p">${w.pos}</div>`:''}
+      <div class="wcs-c">${w.cn}</div>
+      ${w.exEn?`<div style="font-size:12px;color:var(--tx3);font-style:italic;margin-top:2px;">${w.exEn}</div>`:''}
+      <div class="wcs-t t-${w.status||'new'}">${SE[w.status||'new']} ${SL[w.status||'new']}</div>
+    </div>`).join('');
+}
+function setLF(f){lf=f;renderList();}
+function cpW(id){
+  const w=words.find(x=>x.id===id);if(!w)return;
+  navigator.clipboard.writeText(w.word+(w.ipa?' /'+w.ipa+'/':'')+'\n'+(w.pos||'')+' '+w.cn+(w.exEn?'\n'+w.exEn:'')).then(()=>toast('📋 已复制！'));
+}
+
+// ══ 词库 ══
+function renderV(){
+  const cat=document.getElementById('vc').value;
+  const sr=(document.getElementById('vs').value||'').toLowerCase();
+  const lst=VB[cat]||[];
+  const fl=sr?lst.filter(w=>w.toLowerCase().includes(sr)):lst;
+  const ws=new Set(words.map(w=>w.word.toLowerCase()));
+  document.getElementById('vcnt').textContent='共 '+fl.length+' 词';
+  document.getElementById('vg').innerHTML=fl.map(w=>
+    `<div class="vi ${ws.has(w.toLowerCase())?'in':''}" id="vi-${w.replace(/[^a-zA-Z0-9]/g,'_')}" onclick="openVW('${w}')">
+      <span style="font-family:'Lora',serif;font-weight:600;font-size:15px;">${w}</span>
+      <span class="vi-cn" style="font-size:11px;color:var(--tx3);">${VCN[w.toLowerCase()]||VCN[w.toLowerCase().split('-')[0]]||''}</span>
+    </div>`).join('');
+  const needFetch=fl.filter(w=>!VCN[w.toLowerCase()]).slice(0,30);
+  if(needFetch.length){
+    (async()=>{
+      for(let i=0;i<needFetch.length;i+=5){
+        const batch=needFetch.slice(i,i+5);
+        await Promise.all(batch.map(async w=>{
+          const cn=await getCN(w);
+          if(cn){const el=document.querySelector(`#vi-${w.replace(/[^a-zA-Z0-9]/g,'_')} .vi-cn`);if(el)el.textContent=cn;}
+        }));
+        await new Promise(r=>setTimeout(r,300));
+      }
+    })();
+  }
+}
+
+async function openVW(word){
+  if(words.find(w=>w.word.toLowerCase()===word.toLowerCase())){toast('已在列表中！');return;}
+  document.getElementById('vm').classList.add('show');
+  document.getElementById('vmt').textContent='添加：'+word;
+  document.getElementById('vml').style.display='block';
+  document.getElementById('vml').textContent='🔍 正在查询字典并翻译…';
+  document.getElementById('vmf').style.display='none';
+  document.getElementById('vmsb').style.display='none';
+  const preCn=VCN[word.toLowerCase()]||'';
+  let ipa='',pos='',exEn='',allDefs='',defCn='',exCn='';
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(word));
+    const d=await r.json();
+    if(Array.isArray(d)&&d[0]){
+      ipa=(d[0].phonetics?.find(p=>p.text)?.text||'').replace(/\//g,'');
+      const ms=d[0].meanings||[];
+      pos=ms[0]?.partOfSpeech||'';
+      const dfs=ms.flatMap(m=>m.definitions||[]);
+      exEn=dfs.find(df=>df.example)?.example||'';
+      allDefs=ms.map(m=>m.partOfSpeech+': '+m.definitions.slice(0,2).map(df=>df.definition).join('; ')).join('\n');
+    }
+  }catch(e){}
+  if((allDefs||exEn)&&!preCn){
+    try{
+      const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:300,messages:[{role:'user',content:[{type:'text',text:`翻译成中文，格式：\n中文释义：[简洁意思]\n例句译：[例句翻译，无则留空]\n单词：${word}\n释义：${allDefs}\n例句：${exEn}`}]}]})});
+      const ad=await resp.json();
+      const txt=ad.content?.map(c=>c.text||'').join('')||'';
+      const cm=txt.match(/中文释义：(.+)/),em=txt.match(/例句译：(.+)/);
+      if(cm)defCn=cm[1].trim();if(em)exCn=em[1].trim();
+    }catch(e){}
+  }
+  document.getElementById('vmw').value=word;
+  document.getElementById('vmipa').value=ipa;
+  document.getElementById('vmpos').value=pos;
+  document.getElementById('vmcn').value=preCn||defCn;
+  document.getElementById('vmee').value=exEn;
+  document.getElementById('vmce').value=exCn;
+  document.getElementById('vmnt').value='';
+  document.getElementById('vmst').value='new';
+  document.getElementById('vml').style.display='none';
+  document.getElementById('vmf').style.display='block';
+  document.getElementById('vmsb').style.display='inline-flex';
+}
+function saveVM(){
+  const word=document.getElementById('vmw').value.trim();
+  const cn=document.getElementById('vmcn').value.trim();
+  if(!cn){toast('请填写中文意思！');return;}
+  words.push({id:Date.now(),word,ipa:document.getElementById('vmipa').value.trim(),pos:document.getElementById('vmpos').value.trim(),cn,kr:'',exEn:document.getElementById('vmee').value.trim(),exCn:document.getElementById('vmce').value.trim(),exKr:'',status:document.getElementById('vmst').value,note:document.getElementById('vmnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''});
+  save();closeVM();renderV();toast('✅ 已添加：'+word);
+}
+function closeVM(){document.getElementById('vm').classList.remove('show');}
+
+// ══ 添加单词 ══
+function checkDup(val){
+  const hint=document.getElementById('dup-hint');if(!hint)return;
+  const exists=words.some(w=>w.word.toLowerCase()===val.trim().toLowerCase());
+  hint.style.display=exists&&val.trim()?'block':'none';
+}
+function goToDupCard(){
+  const val=document.getElementById('fw').value.trim();
+  const w=words.find(x=>x.word.toLowerCase()===val.toLowerCase());if(!w)return;
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-fc').classList.add('active');
+  document.querySelectorAll('.nb')[1].classList.add('active');
+  deck=[...words];
+  const i=deck.findIndex(x=>x.id===w.id);
+  idx=i>=0?i:0;flipped=false;
+  document.getElementById('ci').classList.remove('flipped');renderCard();
+}
+function addWord(){
+  const w=document.getElementById('fw').value.trim(),cn=document.getElementById('fcn').value.trim();
+  if(!w||!cn){toast('请填写英文单词和中文意思！');return;}
+  if(words.some(x=>x.word.toLowerCase()===w.toLowerCase())){toast('⚠️ 这个单词已存在！');return;}
+  words.push({id:Date.now(),word:w,cn,ipa:document.getElementById('fipa').value.trim(),pos:document.getElementById('fpos').value,kr:'',exEn:document.getElementById('fee').value.trim(),exCn:document.getElementById('fce').value.trim(),exKr:'',status:document.getElementById('fst').value,note:document.getElementById('fnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''});
+  save();['fw','fipa','fcn','fee','fce','fnt'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ 单词已保存！');
+}
+
+// ══ 编辑 ══
+function openEdit(id){
+  const w=words.find(x=>x.id===id);if(!w)return;
+  ['eid','ew','eipa','ecn','eee','ece','ent'].forEach(k=>document.getElementById(k).value=
+    k==='eid'?id:k==='ew'?w.word:k==='eipa'?w.ipa||'':k==='ecn'?w.cn:k==='eee'?w.exEn||'':k==='ece'?w.exCn||'':w.note||'');
+  document.getElementById('epos').value=w.pos||'n.';
+  document.getElementById('est').value=w.status;
+  document.getElementById('edit-mo').classList.add('show');
+}
+function closeMo(){document.getElementById('edit-mo').classList.remove('show');}
+function saveEdit(){
+  const id=+document.getElementById('eid').value,w=words.find(x=>x.id===id);if(!w)return;
+  const newIpa=document.getElementById('eipa').value.trim(),newExEn=document.getElementById('eee').value.trim();
+  if(newIpa!==w.ipa)w.ipaHtml='';if(newExEn!==w.exEn)w.exEnHtml='';
+  w.word=document.getElementById('ew').value.trim();w.ipa=newIpa;w.pos=document.getElementById('epos').value;
+  w.cn=document.getElementById('ecn').value.trim();w.kr='';w.exEn=newExEn;
+  w.exCn=document.getElementById('ece').value.trim();w.status=document.getElementById('est').value;
+  w.note=document.getElementById('ent').value.trim();
+  save();closeMo();renderList();toast('✅ 已更新！');
+}
+function delWord(){
+  if(!confirm('确定删除？'))return;
+  const id=+document.getElementById('eid').value;
+  words=words.filter(x=>x.id!==id);
+  save();closeMo();renderList();toast('🗑 已删除');
+}
+function goToCard(){
+  jumpId=+document.getElementById('eid').value;closeMo();
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-fc').classList.add('active');
+  document.querySelectorAll('.nb')[1].classList.add('active');
+  deck=[...words];
+  const i=deck.findIndex(w=>w.id===jumpId);idx=i>=0?i:0;jumpId=null;flipped=false;
+  document.getElementById('ci').classList.remove('flipped');renderCard();
+}
+
+// ══ 卡片 ══
+function initFC(){deck=[...words].sort(()=>Math.random()-.5);idx=0;flipped=false;document.getElementById('ci').classList.remove('flipped');renderCard();}
+
+function renderCard(){
+  hideTb();savedSel=null;lne=null;
+  if(!deck.length){
+    document.getElementById('cfw').textContent='没有单词';
+    ['cfi','cfn'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+    document.getElementById('cfe').innerHTML='';
+    document.getElementById('cbc').innerHTML='<p style="color:var(--tx3)">请先添加单词</p>';
+    document.getElementById('fcp').textContent='0 / 0';return;
+  }
+  const w=deck[idx];
+  const wEl=document.getElementById('cfw');
+  if(w.wordColorHtml){wEl.innerHTML=w.wordColorHtml;wEl.style.color='';}
+  else{wEl.textContent=w.word;wEl.style.color=w.wordColor||'var(--tx)';}
+  const sb=document.getElementById('cf-status'),st=w.status||'new';
+  sb.textContent=SE[st]+' '+SL[st];sb.className='sbadge '+st;
+  document.getElementById('cfi')[w.ipaHtml?'innerHTML':'textContent']=w.ipaHtml||(w.ipa?'/'+w.ipa+'/':'');
+  document.getElementById('cfn').innerHTML=w.noteHtml||(w.note||'');
+  if(w.exEn){
+    document.getElementById('cfe').innerHTML=
+      `<div class="cfe-en no-flip" contenteditable="true"
+        onfocus="lne=this" onmouseup="onNUp(event)"
+        oninput="lne=this;saveFieldEl('exEnHtml',this)">${w.exEnHtml||w.exEn}</div>`;
+  }else{
+    document.getElementById('cfe').innerHTML='<button class="no-flip" onclick="lookup()" style="margin-top:8px;background:var(--ac-l);color:var(--ac);border:none;border-radius:20px;padding:6px 16px;font-size:13px;cursor:pointer;">🔍 查询音标/例句</button>';
+  }
+  const spkReadBtn=document.getElementById('spk-read');
+  const spkWordBtn=document.getElementById('spk-word');
+  const newRead=spkReadBtn.cloneNode(true);
+  const newWord=spkWordBtn.cloneNode(true);
+  spkReadBtn.parentNode.replaceChild(newRead,spkReadBtn);
+  spkWordBtn.parentNode.replaceChild(newWord,spkWordBtn);
+  if(w.exEn){newRead.textContent='🔊 朗读例句';newRead.addEventListener('click',()=>spkS(w.exEn));}
+  else{newRead.textContent='🔊 朗读单词';newRead.addEventListener('click',()=>spkW());}
+  newWord.textContent='🎵 听发音';newWord.addEventListener('click',()=>spkW());
+  document.getElementById('fcp').textContent=(idx+1)+' / '+deck.length;
+  document.getElementById('cbc').innerHTML=`
+    ${w.pos?`<div style="font-size:12px;font-weight:600;color:var(--ac2);background:var(--ac2-l);padding:2px 9px;border-radius:10px;width:fit-content;">${w.pos}</div>`:''}
+    <div style="font-size:22px;font-weight:700;user-select:text;">${w.cn}</div>
+    ${w.exCn?`<div style="height:1px;background:var(--bdr);"></div><div style="font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:1px;">例句中文</div><div style="font-size:17px;color:var(--tx);line-height:1.6;user-select:text;">${w.exCn}</div>`:''}
+    ${w.exEn?`<div style="height:1px;background:var(--bdr);"></div>
+      <div style="font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:1px;display:flex;align-items:center;gap:8px;">例句（英文）
+        <button id="back-spk-btn" style="background:var(--ac-l);color:var(--ac);border:none;border-radius:14px;padding:3px 10px;font-size:11px;cursor:pointer;">🔊</button>
+      </div>
+      <div style="font-size:21px;font-family:'Lora',serif;font-style:italic;line-height:1.5;user-select:text;">${w.exEn}</div>`:''}
+    <div style="height:1px;background:var(--bdr);"></div>
+    ${!w.exCn&&w.exEn?`<button id="trans-ex-btn" onclick="event.stopPropagation();transEx(event)" style="width:100%;background:var(--fgt-b);color:var(--fgt);border:1.5px solid var(--fgt);border-radius:10px;padding:7px;font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;">🌐 翻译例句</button>`:''}
+    <div id="cbn" class="rnote-b" contenteditable="true" data-ph="标注…"
+      onfocus="lne=this" onmouseup="onNUp(event)"
+      oninput="lne=this;saveN()">${w.noteHtml||(w.note||'')}</div>`;
+  if(w.exEn){const backSpk=document.getElementById('back-spk-btn');if(backSpk)backSpk.addEventListener('click',()=>spkS(w.exEn));}
+  flipped=false;document.getElementById('ci').classList.remove('flipped');
+}
+
+function flipCard(){flipped=!flipped;document.getElementById('ci').classList.toggle('flipped',flipped);}
+function nextCard(){if(!deck.length)return;idx=(idx+1)%deck.length;renderCard();}
+function prevCard(){if(!deck.length)return;idx=(idx-1+deck.length)%deck.length;renderCard();}
+
+function classifyOnly(status){
+  if(!deck.length)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id);
+  if(o){o.status=status;w.status=status;save();}
+  const sb=document.getElementById('cf-status');
+  if(sb){sb.textContent=SE[status]+' '+SL[status];sb.className='sbadge '+status;}
+  renderCard();toast(SE[status]+' 已改为「'+SL[status]+'」');
+}
+
+// ══ TTS ══
+function ensureVoices(cb){
+  const vs=speechSynthesis.getVoices();
+  if(vs.length){cb(vs);return;}
+  speechSynthesis.onvoiceschanged=()=>{cb(speechSynthesis.getVoices());};
+}
+function fbTTS(t){
+  if(!t)return;speechSynthesis.cancel();
+  ensureVoices(voices=>{
+    const u=new SpeechSynthesisUtterance(t);
+    const v=voices.find(x=>x.lang==='en-GB')||voices.find(x=>x.lang.startsWith('en-US'))||voices.find(x=>x.lang.startsWith('en'))||null;
+    if(v)u.voice=v;u.lang='en-GB';u.rate=0.85;speechSynthesis.speak(u);
+  });
+}
+function spkT(text){
+  if(!text)return;
+  const trimmed=text.trim();
+  if(trimmed.split(/\s+/).length===1){
+    fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(trimmed))
+      .then(r=>r.json()).then(d=>{
+        const ph=d[0]?.phonetics||[];
+        const au=ph.find(p=>p.audio&&p.audio.includes('uk'))?.audio||ph.find(p=>p.audio&&p.audio.includes('us'))?.audio||ph.find(p=>p.audio)?.audio;
+        if(au){const audio=new Audio(au);audio.play().catch(()=>fbTTS(trimmed));}
+        else fbTTS(trimmed);
+      }).catch(()=>fbTTS(trimmed));
+  }else fbTTS(trimmed);
+}
+function spkW(){if(!deck.length)return;spkT(deck[idx].word);}
+function spkS(text){if(!text)return;fbTTS(text);toast('🔊 朗读中…');}
+
+async function transEx(e){
+  if(e)e.stopPropagation();
+  if(!deck.length)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id);if(!o||!w.exEn)return;
+  const btn=document.getElementById('trans-ex-btn');
+  if(btn){btn.textContent='⏳ 翻译中…';btn.disabled=true;}
+  try{
+    const url='https://api.mymemory.translated.net/get?q='+encodeURIComponent(w.exEn)+'&langpair=en|zh';
+    const resp=await fetch(url);const d=await resp.json();
+    const translated=(d.responseData?.translatedText||'').trim();
+    if(translated&&translated!==w.exEn&&d.responseStatus===200){
+      o.exCn=translated;w.exCn=translated;save();
+      const cbc=document.getElementById('cbc');
+      if(cbc){
+        const tb=document.getElementById('trans-ex-btn');if(tb)tb.style.display='none';
+        const existCn=cbc.querySelector('.trans-cn-result');
+        if(!existCn){
+          const div=document.createElement('div');div.className='trans-cn-result';
+          div.style.cssText='font-size:15px;color:var(--tx2);margin-top:4px;line-height:1.6;padding:6px 0;';
+          div.textContent=translated;if(tb)tb.parentNode.insertBefore(div,tb);else cbc.appendChild(div);
+        }
+      }
+      toast('✅ 翻译完成！');
+    }else{if(btn){btn.textContent='🌐 翻译例句';btn.disabled=false;}toast('翻译失败，请手动输入');}
+  }catch(e){if(btn){btn.textContent='🌐 翻译例句';btn.disabled=false;}toast('网络错误，请稍后重试');}
+}
+
+async function lookup(){
+  if(!deck.length)return;
+  const w=deck[idx],o=words.find(x=>x.id===w.id);if(!o)return;
+  document.getElementById('cfe').innerHTML='<span style="font-size:13px;color:var(--tx3);">🔍 查询中…</span>';
+  try{
+    const r=await fetch('https://api.dictionaryapi.dev/api/v2/entries/en/'+encodeURIComponent(w.word));
+    const d=await r.json();
+    if(Array.isArray(d)&&d[0]){
+      const ipa=(d[0].phonetics?.find(p=>p.text)?.text||'').replace(/\//g,'');
+      const ms=d[0].meanings||[];
+      const dfs=ms.flatMap(m=>m.definitions||[]);
+      const exEn=dfs.find(df=>df.example)?.example||'';
+      const allDefs=ms.map(m=>m.partOfSpeech+': '+m.definitions.slice(0,2).map(df=>df.definition).join('; ')).join('\n');
+      if(ipa&&!o.ipa){o.ipa=ipa;w.ipa=ipa;}
+      if(ms[0]?.partOfSpeech&&!o.pos){o.pos=ms[0].partOfSpeech;w.pos=ms[0].partOfSpeech;}
+      if(exEn&&!o.exEn){o.exEn=exEn;w.exEn=exEn;}
+      if(exEn||allDefs){
+        try{
+          const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:200,messages:[{role:'user',content:[{type:'text',text:`翻译：\n中文释义：[简洁中文]\n例句译：[例句翻译，无则留空]\n单词：${w.word}\n释义：${allDefs}\n例句：${exEn}`}]}]})});
+          const ad=await resp.json();
+          const txt=ad.content?.map(c=>c.text||'').join('')||'';
+          const cm=txt.match(/中文释义：(.+)/),em=txt.match(/例句译：(.+)/);
+          if(cm&&!o.cn.includes(cm[1].trim().slice(0,4))){o.cn=cm[1].trim();w.cn=cm[1].trim();}
+          if(em&&em[1].trim()&&em[1].trim()!=='无'){o.exCn=em[1].trim();w.exCn=em[1].trim();}
+        }catch(e){}
+      }
+      save();renderCard();toast('✅ 已补全！');
+    }
+  }catch(e){document.getElementById('cfe').innerHTML='<span style="font-size:13px;color:var(--mis);">查询失败</span>';}
+}
+
+// ══ 工具条 ══
+document.addEventListener('mousedown',e=>{
+  const tb=document.getElementById('ntb');if(!tb)return;
+  const areas=['cfn','cbn','cfi'];
+  const cfeEl=document.querySelector('.cfe-en');
+  const cfwEl2=document.getElementById('cfw');
+  if(!tb.contains(e.target)&&!areas.some(id=>{const el=document.getElementById(id);return el&&el.contains(e.target);})&&!(cfeEl&&cfeEl.contains(e.target))&&!(cfwEl2&&cfwEl2.contains(e.target))){
+    hideTb();savedSel=null;
+  }
+});
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ══ 数据迁移 ══
+(function(){
+  const sm={unfamiliar:'unf',misspell:'mis',forgot:'fgt',familiar:'fam'};
+  let changed=false;
+  words.forEach(w=>{
+    if(!w.status||!SL[w.status]){w.status='new';changed=true;}
+    if(sm[w.status]){w.status=sm[w.status];changed=true;}
+    ['noteHtml','ipaHtml','exEnHtml','wordColor','wordColorHtml'].forEach(k=>{if(!w[k]){w[k]='';changed=true;}});
+  });
+  if(changed)localStorage.setItem('wc_words',JSON.stringify(words));
+})();
+
+renderList();
+</script>
+</body>
+</html>
