@@ -251,6 +251,7 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);
     </select>
     <input class="fcf" type="text" id="vs" placeholder="搜索…" oninput="renderV()" style="width:130px;">
     <span id="vcnt" style="font-size:13px;color:var(--tx3);"></span>
+    <button class="bg" onclick="goToCardFromVocab()" style="margin-left:auto;">🃏 去看卡片</button>
   </div>
   <div class="vg" id="vg"></div>
 </div>
@@ -334,7 +335,14 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);
 <!-- 词库弹窗 -->
 <div class="vmo" id="vm">
   <div class="vmd">
-    <div class="mt" id="vmt">添加单词</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
+      <div class="mt" id="vmt" style="margin-bottom:0;">添加单词</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">
+        <button class="bs" onclick="closeVM()">取消</button>
+        <button class="bp" id="vmsb" onclick="saveVM()" style="display:none;">添加到列表</button>
+        <button class="bg" id="vmgc" onclick="goToCardFromVM()" style="display:none;">🃏 去看卡片</button>
+      </div>
+    </div>
     <div id="vml" style="text-align:center;padding:20px;color:var(--tx3);">🔍 正在查询…</div>
     <div id="vmf" style="display:none;">
       <div class="fr"><div class="fg"><label class="fl">单词</label><input class="fi" id="vmw" readonly></div><div class="fg"><label class="fl">IPA</label><input class="fi" id="vmipa"></div></div>
@@ -355,7 +363,6 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);
       <div class="fg"><label class="fl">例句（中文）</label><textarea class="fta" id="vmce"></textarea></div>
       <div class="fg"><label class="fl">我的标注</label><input class="fi" id="vmnt" placeholder="记忆口诀…"></div>
     </div>
-    <div class="ma"><button class="bs" onclick="closeVM()">取消</button><button class="bp" id="vmsb" onclick="saveVM()" style="display:none;">添加到列表</button></div>
   </div>
 </div>
 
@@ -527,19 +534,21 @@ function onNUp(e){
   const cfn=document.getElementById('cfn'),cfi=document.getElementById('cfi'),cbn=document.getElementById('cbn');
   const cfeEl=document.querySelector('.cfe-en');
   const cfwEl=document.getElementById('cfw');
+  const cbcCn=document.getElementById('cbc-cn');
   const tgt=e.target;
   if(tgt===cfn||cfn?.contains(tgt))lne=cfn;
   else if(cbn&&(tgt===cbn||cbn.contains(tgt)))lne=cbn;
   else if(tgt===cfi||cfi?.contains(tgt))lne=cfi;
   else if(cfeEl&&(tgt===cfeEl||cfeEl.contains(tgt)))lne=cfeEl;
   else if(tgt===cfwEl||cfwEl?.contains(tgt))lne=cfwEl;
+  else if(cbcCn&&(tgt===cbcCn||cbcCn.contains(tgt)))lne=cbcCn;
   else lne=lne||cfn;
   setTimeout(()=>{
     const sel=window.getSelection();
     if(!sel||sel.isCollapsed||!sel.toString().trim()){hideTb();return;}
     const rng=sel.getRangeAt(0);
     const anc=rng.commonAncestorContainer;
-    if(![cfn,cbn,cfi,cfeEl,cfwEl].some(el=>el&&el.contains(anc))){hideTb();return;}
+    if(![cfn,cbn,cfi,cfeEl,cfwEl,cbcCn].some(el=>el&&el.contains(anc))){hideTb();return;}
     savedSel=rng;
     const rc=rng.getBoundingClientRect();
     const tb=document.getElementById('ntb');
@@ -560,13 +569,15 @@ function apC(e,color,hl){
   const cfn=document.getElementById('cfn'),cbn=document.getElementById('cbn'),cfi=document.getElementById('cfi');
   const cfeEl=document.querySelector('.cfe-en');
   const cfwEl=document.getElementById('cfw');
+  const cbcCn=document.getElementById('cbc-cn');
   const cont=savedSel.commonAncestorContainer;
-  if(![cfn,cbn,cfi,cfeEl,cfwEl].some(el=>el&&el.contains(cont))){hideTb();savedSel=null;return;}
+  if(![cfn,cbn,cfi,cfeEl,cfwEl,cbcCn].some(el=>el&&el.contains(cont))){hideTb();savedSel=null;return;}
   if(color==='clr'&&hl==='clr')wrapSpan(savedSel,null,null,true);
   else wrapSpan(savedSel,color,hl,false);
   if(cfi?.contains(cont))saveField('ipaHtml','cfi');
   else if(cfeEl?.contains(cont))saveFieldEl('exEnHtml',cfeEl);
   else if(cfwEl?.contains(cont))saveField('wordColorHtml','cfw');
+  else if(cbcCn?.contains(cont))saveField('cnHtml','cbc-cn');
   else saveN();
   hideTb();savedSel=null;
 }
@@ -787,15 +798,39 @@ async function openVW(word){
   document.getElementById('vml').style.display='none';
   document.getElementById('vmf').style.display='block';
   document.getElementById('vmsb').style.display='inline-flex';
+  document.getElementById('vmgc').style.display='none';
 }
 function saveVM(){
   const word=document.getElementById('vmw').value.trim();
   const cn=document.getElementById('vmcn').value.trim();
   if(!cn){toast('请填写中文意思！');return;}
-  words.push({id:Date.now(),word,ipa:document.getElementById('vmipa').value.trim(),pos:document.getElementById('vmpos').value.trim(),cn,kr:'',exEn:document.getElementById('vmee').value.trim(),exCn:document.getElementById('vmce').value.trim(),exKr:'',status:document.getElementById('vmst').value,note:document.getElementById('vmnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''});
-  save();closeVM();renderV();toast('✅ 已添加：'+word);
+  words.push({id:Date.now(),word,ipa:document.getElementById('vmipa').value.trim(),pos:document.getElementById('vmpos').value.trim(),cn,kr:'',exEn:document.getElementById('vmee').value.trim(),exCn:document.getElementById('vmce').value.trim(),exKr:'',status:document.getElementById('vmst').value,note:document.getElementById('vmnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:'',cnHtml:''});
+  save();renderV();toast('✅ 已添加：'+word);
+  document.getElementById('vmsb').style.display='none';
+  document.getElementById('vmgc').style.display='inline-flex';
 }
 function closeVM(){document.getElementById('vm').classList.remove('show');}
+function goToCardFromVM(){
+  const word=document.getElementById('vmw').value.trim();
+  closeVM();
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-fc').classList.add('active');
+  document.querySelectorAll('.nb')[1].classList.add('active');
+  deck=[...words];
+  const w=words.find(x=>x.word.toLowerCase()===word.toLowerCase());
+  const i=w?deck.findIndex(x=>x.id===w.id):0;
+  idx=i>=0?i:0;flipped=false;
+  document.getElementById('ci').classList.remove('flipped');renderCard();
+}
+function goToCardFromVocab(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('active'));
+  document.getElementById('view-fc').classList.add('active');
+  document.querySelectorAll('.nb')[1].classList.add('active');
+  deck=[...words];idx=0;flipped=false;
+  document.getElementById('ci').classList.remove('flipped');renderCard();
+}
 
 // ══ 添加单词 ══
 function checkDup(val){
@@ -819,7 +854,7 @@ function addWord(){
   const w=document.getElementById('fw').value.trim(),cn=document.getElementById('fcn').value.trim();
   if(!w||!cn){toast('请填写英文单词和中文意思！');return;}
   if(words.some(x=>x.word.toLowerCase()===w.toLowerCase())){toast('⚠️ 这个单词已存在！');return;}
-  words.push({id:Date.now(),word:w,cn,ipa:document.getElementById('fipa').value.trim(),pos:document.getElementById('fpos').value,kr:'',exEn:document.getElementById('fee').value.trim(),exCn:document.getElementById('fce').value.trim(),exKr:'',status:document.getElementById('fst').value,note:document.getElementById('fnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:''});
+  words.push({id:Date.now(),word:w,cn,ipa:document.getElementById('fipa').value.trim(),pos:document.getElementById('fpos').value,kr:'',exEn:document.getElementById('fee').value.trim(),exCn:document.getElementById('fce').value.trim(),exKr:'',status:document.getElementById('fst').value,note:document.getElementById('fnt').value.trim(),noteHtml:'',ipaHtml:'',exEnHtml:'',wordColor:'',wordColorHtml:'',cnHtml:''});
   save();['fw','fipa','fcn','fee','fce','fnt'].forEach(id=>document.getElementById(id).value='');
   toast('✅ 单词已保存！');
 }
@@ -901,7 +936,10 @@ function renderCard(){
   document.getElementById('fcp').textContent=(idx+1)+' / '+deck.length;
   document.getElementById('cbc').innerHTML=`
     ${w.pos?`<div style="font-size:12px;font-weight:600;color:var(--ac2);background:var(--ac2-l);padding:2px 9px;border-radius:10px;width:fit-content;">${w.pos}</div>`:''}
-    <div style="font-size:22px;font-weight:700;user-select:text;">${w.cn}</div>
+    <div id="cbc-cn" class="no-flip" contenteditable="true"
+      onfocus="lne=this" onmouseup="onNUp(event)"
+      oninput="lne=this;saveField('cnHtml','cbc-cn')"
+      style="font-size:22px;font-weight:700;user-select:text;outline:none;word-break:break-word;cursor:text;">${w.cnHtml||w.cn}</div>
     ${w.exCn?`<div style="height:1px;background:var(--bdr);"></div><div style="font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:1px;">例句中文</div><div style="font-size:17px;color:var(--tx);line-height:1.6;user-select:text;">${w.exCn}</div>`:''}
     ${w.exEn?`<div style="height:1px;background:var(--bdr);"></div>
       <div style="font-size:11px;font-weight:600;color:var(--tx3);letter-spacing:1px;display:flex;align-items:center;gap:8px;">例句（英文）
@@ -1024,7 +1062,8 @@ document.addEventListener('mousedown',e=>{
   const areas=['cfn','cbn','cfi'];
   const cfeEl=document.querySelector('.cfe-en');
   const cfwEl2=document.getElementById('cfw');
-  if(!tb.contains(e.target)&&!areas.some(id=>{const el=document.getElementById(id);return el&&el.contains(e.target);})&&!(cfeEl&&cfeEl.contains(e.target))&&!(cfwEl2&&cfwEl2.contains(e.target))){
+  const cbcCn=document.getElementById('cbc-cn');
+  if(!tb.contains(e.target)&&!areas.some(id=>{const el=document.getElementById(id);return el&&el.contains(e.target);})&&!(cfeEl&&cfeEl.contains(e.target))&&!(cfwEl2&&cfwEl2.contains(e.target))&&!(cbcCn&&cbcCn.contains(e.target))){
     hideTb();savedSel=null;
   }
 });
@@ -1042,7 +1081,7 @@ function toast(msg){
   words.forEach(w=>{
     if(!w.status||!SL[w.status]){w.status='new';changed=true;}
     if(sm[w.status]){w.status=sm[w.status];changed=true;}
-    ['noteHtml','ipaHtml','exEnHtml','wordColor','wordColorHtml'].forEach(k=>{if(!w[k]){w[k]='';changed=true;}});
+    ['noteHtml','ipaHtml','exEnHtml','wordColor','wordColorHtml','cnHtml'].forEach(k=>{if(!w[k]){w[k]='';changed=true;}});
   });
   if(changed)localStorage.setItem('wc_words',JSON.stringify(words));
 })();
