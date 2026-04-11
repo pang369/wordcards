@@ -397,7 +397,6 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);
   <div class="tbc" style="background:#e53935;" onmousedown="apC(event,'#e53935',null)"></div>
   <div class="tbc" style="background:#b85454;" onmousedown="apC(event,'#b85454',null)"></div>
   <div class="tbc" style="background:#2d6a4f;" onmousedown="apC(event,'#2d6a4f',null)"></div>
-  <div class="tbc" style="background:#00cfff;" onmousedown="apC(event,'#00cfff',null)"></div>
   <div class="tbc" style="background:#c77b3a;" onmousedown="apC(event,'#c77b3a',null)"></div>
   <div class="tbc" style="background:#d946a8;" onmousedown="apC(event,'#d946a8',null)"></div>
   <div class="tbsep"></div>
@@ -413,6 +412,9 @@ body{font-family:'Noto Sans SC',sans-serif;background:var(--bg);color:var(--tx);
   <button class="tbsz" onmousedown="apSz(event,14)">中</button>
   <button class="tbsz" onmousedown="apSz(event,18)">大</button>
   <button class="tbsz" onmousedown="apSz(event,22)">特大</button>
+  <div class="tbsep"></div>
+  <button class="tbsz" onmousedown="apBold(event,true)" style="font-weight:700;">粗体</button>
+  <button class="tbsz" onmousedown="apBold(event,false)" style="font-weight:300;">细体</button>
   <div class="tbsep"></div>
   <button class="tbclr" onmousedown="apC(event,'clr','clr')">清除</button>
 </div>
@@ -588,6 +590,19 @@ function apSz(e,sz){
   wrapSzSpan(savedSel,sz);
   saveN();hideTb();savedSel=null;
 }
+function apBold(e,isBold){
+  e.preventDefault();
+  if(!savedSel)return;
+  const sel=window.getSelection();sel.removeAllRanges();sel.addRange(savedSel);
+  wrapBoldSpan(savedSel,isBold);
+  saveN();hideTb();savedSel=null;
+}
+function wrapBoldSpan(rng,isBold){
+  const frag=rng.extractContents();
+  const sp=document.createElement('span');
+  sp.style.fontWeight=isBold?'700':'300';
+  sp.appendChild(frag);rng.insertNode(sp);
+}
 function wrapSzSpan(rng,sz){
   const frag=rng.extractContents();
   const sp=document.createElement('span');
@@ -606,7 +621,7 @@ function wrapSpan(rng,color,hl,clr){
       sp.appendChild(nd.cloneNode());return sp;
     }
     if(nd.nodeType===1){
-      if(clr){nd.style.removeProperty('color');nd.style.removeProperty('background-color');nd.style.removeProperty('font-size');}
+      if(clr){nd.style.removeProperty('color');nd.style.removeProperty('background-color');nd.style.removeProperty('font-size');nd.style.removeProperty('font-weight');}
       else{if(color)nd.style.color=color;if(hl!==null){if(hl==='transparent')nd.style.removeProperty('background-color');else nd.style.backgroundColor=hl;}}
       Array.from(nd.childNodes).forEach(c=>{const r=proc(c);if(r!==c)nd.replaceChild(r,c);});
       return nd;
@@ -757,7 +772,29 @@ function renderV(){
 }
 
 async function openVW(word){
-  if(words.find(w=>w.word.toLowerCase()===word.toLowerCase())){toast('已在列表中！');return;}
+  const existingWord=words.find(w=>w.word.toLowerCase()===word.toLowerCase());
+  if(existingWord){
+    // Show popup with Chinese meaning and go-to-card option
+    document.getElementById('vm').classList.add('show');
+    document.getElementById('vmt').textContent='📖 '+word;
+    document.getElementById('vml').style.display='block';
+    document.getElementById('vml').innerHTML=
+      '<div style="padding:10px 0;">'
+      +'<div style="font-size:13px;color:var(--tx3);margin-bottom:8px;">已在单词列表中</div>'
+      +(existingWord.ipa?'<div style="font-size:14px;color:var(--tx3);margin-bottom:8px;">/'+existingWord.ipa+'/</div>':'')
+      +(existingWord.pos?'<div style="font-size:12px;color:var(--ac2);background:var(--ac2-l);display:inline-block;padding:2px 8px;border-radius:10px;margin-bottom:10px;">'+existingWord.pos+'</div>':'')
+      +'<div style="font-size:22px;font-weight:700;color:var(--tx);margin-bottom:10px;">'+existingWord.cn+'</div>'
+      +(existingWord.exEn?'<div style="font-size:14px;font-style:italic;color:var(--tx2);margin-bottom:4px;">'+existingWord.exEn+'</div>':'')
+      +(existingWord.exCn?'<div style="font-size:13px;color:var(--tx3);">'+existingWord.exCn+'</div>':'')
+      +(existingWord.note?'<div style="font-size:13px;color:var(--ac);margin-top:8px;">📝 '+existingWord.note+'</div>':'')
+      +'</div>';
+    document.getElementById('vmf').style.display='none';
+    document.getElementById('vmsb').style.display='none';
+    document.getElementById('vmgc').style.display='inline-flex';
+    // Store word for goToCardFromVM
+    document.getElementById('vmw').value=word;
+    return;
+  }
   document.getElementById('vm').classList.add('show');
   document.getElementById('vmt').textContent='添加：'+word;
   document.getElementById('vml').style.display='block';
